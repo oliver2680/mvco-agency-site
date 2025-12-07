@@ -36,7 +36,6 @@ a {
 }
 
 .section-inner {
-  max-width: 1120px;
   margin: 0 auto;
 }
 
@@ -56,35 +55,61 @@ p.section-intro {
 /* ============ 1. HERO (Valar-style ATF) ============ */
 
 .mvco-hero {
+  --hero-pad: clamp(2.5rem, 7vw, 5rem);
   min-height: 100vh;
-  padding: clamp(2.5rem, 7vw, 5rem);
+  padding: var(--hero-pad);
+  padding-left: 0;
   background: #f7f4f0;
   display: flex;
   align-items: stretch; /* allow inner columns to take full height */
-  justify-content: center;
+  justify-content: flex-start;
   overflow: hidden;
+  position: relative;
 }
 
 .mvco-hero-inner {
   width: 100%;
-  max-width: 1200px;
   display: grid;
-  /* Left ≈ 40%, right ≈ 60% */
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+  /* Left ≈ 50%, right ≈ 50% */
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: clamp(2.5rem, 5vw, 4.5rem);
   align-items: stretch;
+  min-height: calc(100vh - (var(--hero-pad) * 2));
 }
 
 /* Left panel with gradient / video + logo (Hero gradient block) */
 .mvco-hero-panel {
+  --panel-gradient-x: 0%;
+  --panel-gradient-y: 0%;
   position: relative;
-  border-radius: 1.5rem;
+  border-radius: 1rem;
   overflow: hidden;
-  height: 100%;
+  height: calc(100% + (var(--hero-pad) * 2));
   min-height: clamp(360px, 82vh, 720px);
-  background: radial-gradient(circle at 0% 0%, #162a63 0, #162a63 20%, #f26a21 80%, #983323 100%);
-  transform-origin: center;
-  animation: mvco-panel-intro 1.9s ease-out forwards;
+  margin-top: calc(-1 * var(--hero-pad));
+  margin-bottom: calc(-1 * var(--hero-pad));
+  margin-left: 0;
+  width: 100%;
+  background: radial-gradient(
+    circle at var(--panel-gradient-x, 20%) var(--panel-gradient-y, 0%),
+    #212b32 10%,
+    #193e59 40%,
+    #223515 65%,
+    #0c1c06 90%
+  );
+  transform-origin:inherit;
+  animation: mvco-panel-intro 5s ease-out forwards;
+  transition: background 0.4s ease;
+}
+
+.mvco-hero-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 0 solid rgb(247, 244, 240);
+  pointer-events: none;
+  opacity: 0;
 }
 
 .mvco-hero-media {
@@ -107,12 +132,12 @@ p.section-intro {
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-weight: 700;
-  letter-spacing: 0.16em;
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 100;
   font-size: clamp(3.2rem, 8vw, 4.6rem);
-  text-transform: uppercase;
   transform: translateY(110%);
-  animation: mvco-logo-rise 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards 0.15s;
+  animation: mvco-logo-rise 3s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation-delay: 2s;
 }
 
 /* Right-hand copy (headline column) */
@@ -124,7 +149,8 @@ p.section-intro {
   justify-content: center;
   opacity: 0;
   transform: translateY(18px);
-  animation: mvco-copy-reveal 1.1s ease-out forwards 1.1s;
+  animation: mvco-copy-reveal 1.1s ease-out forwards;
+  animation-delay: 4s;
 }
 
 .mvco-hero-kicker {
@@ -191,21 +217,10 @@ p.section-intro {
 }
 
 /* Hero animations */
-@keyframes mvco-panel-intro {
-  0% {
-    transform: translateY(12%) scaleX(1.4) scaleY(1.25);
-  }
-  45% {
-    transform: translateY(0) scaleX(1.35) scaleY(1.05);
-  }
-  100% {
-    transform: translateY(0) scaleX(1) scaleY(1);
-  }
-}
 
 @keyframes mvco-logo-rise {
   0% {
-    transform: translateY(110%);
+    transform: translateY(60%);
   }
   60% {
     transform: translateY(0%);
@@ -215,6 +230,19 @@ p.section-intro {
   }
 }
 
+@keyframes mvco-panel-intro {
+  0% {
+    transform: translateY(12%) scaleX(1) scaleY(1);
+  }
+  45% {
+    transform: translateY(0) scaleX(1) scaleY(1);
+  }
+  100% {
+    transform: translateY(0) scaleX(1) scaleY(1);
+  }
+}
+
+
 @keyframes mvco-copy-reveal {
   0% {
     opacity: 0;
@@ -223,6 +251,50 @@ p.section-intro {
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes mvco-panel-desktop {
+  0% {
+    transform: scaleX(4.5) scaleY(1.05);
+  }
+
+  100% {
+    transform: scaleX(1) scaleY(1);
+  }
+}
+
+@keyframes mvco-panel-frame {
+  0% {
+    opacity: 0;
+    border-width: 5px;
+  }
+  40% {
+    opacity: 0;
+    border-width: 5px;
+  }
+  55% {
+    opacity: 1;
+    border-width: 5px;
+  }
+  100% {
+    opacity: 1;
+    border-width: 5px;
+  }
+}
+
+@media (min-width: 960px) {
+  .mvco-hero-panel {
+    transform-origin: left center;
+    animation: mvco-panel-desktop 2s cubic-bezier(0, 0, 1, 1) forwards;
+  }
+
+  .mvco-hero-logo {
+    animation-delay: 2s;
+  }
+
+  .mvco-hero-copy {
+    animation-delay: 2.5s;
   }
 }
 
