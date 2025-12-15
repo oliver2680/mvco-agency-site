@@ -5,11 +5,49 @@ document.addEventListener("DOMContentLoaded", () => {
     yearSpan.textContent = new Date().getFullYear();
   }
 
+  const heroSection = document.querySelector(".mvco-hero");
+  const heroStage = document.querySelector(".mvco-hero-stage");
+  const baseWidth = heroSection?.dataset?.heroBaseWidth
+    ? parseFloat(heroSection.dataset.heroBaseWidth)
+    : 1200;
+  const baseHeight = heroSection?.dataset?.heroBaseHeight
+    ? parseFloat(heroSection.dataset.heroBaseHeight)
+    : 760;
+
+  const updateHeroScale = () => {
+    if (!heroSection || !heroStage || !baseWidth || !baseHeight) return;
+    const heightRatio = window.innerHeight / baseHeight;
+    const scale = heightRatio;
+    heroSection.style.setProperty("--hero-scale", scale);
+  };
+
+  if (heroSection && heroStage) {
+    updateHeroScale();
+    window.addEventListener("resize", updateHeroScale);
+  }
+
   const heroPanel = document.querySelector(".mvco-hero-panel");
+  const heroInner = document.querySelector(".mvco-hero-inner");
+  if (heroPanel && heroInner) {
+    heroPanel.addEventListener(
+      "animationstart",
+      () => {
+        setTimeout(() => {
+          heroInner.classList.add("hero-padding-active");
+        }, 1800);
+      },
+      { once: true }
+    );
+  }
+
   if (heroPanel) {
     let rafId = null;
-    let targetX = 10;
-    let targetY = 10;
+    const BASE_X = 16;
+    const BASE_Y = 10;
+    const RANGE_X = 22;
+    const RANGE_Y = 16;
+    let targetX = BASE_X;
+    let targetY = BASE_Y;
     let interactionEnabled = false;
 
     const applyGradient = () => {
@@ -18,15 +56,20 @@ document.addEventListener("DOMContentLoaded", () => {
       rafId = null;
     };
 
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
     const handlePointerMove = (event) => {
       if (!interactionEnabled) {
         return;
       }
-      const rect = heroPanel.getBoundingClientRect();
-      const x = ((event.clientX - rect.left) / rect.width) * 100;
-      const y = ((event.clientY - rect.top) / rect.height) * 100;
-      targetX = Math.min(100, Math.max(0, x));
-      targetY = Math.min(100, Math.max(0, y));
+      const viewportWidth = window.innerWidth || 1;
+      const viewportHeight = window.innerHeight || 1;
+      const xRatio = event.clientX / viewportWidth;
+      const yRatio = event.clientY / viewportHeight;
+      const desiredX = BASE_X + (xRatio - 0.5) * RANGE_X;
+      const desiredY = BASE_Y + (yRatio - 0.5) * RANGE_Y;
+      targetX = clamp(desiredX, BASE_X - RANGE_X / 2, BASE_X + RANGE_X / 2);
+      targetY = clamp(desiredY, BASE_Y - RANGE_Y / 2, BASE_Y + RANGE_Y / 2);
 
       if (rafId === null) {
         rafId = requestAnimationFrame(applyGradient);
@@ -34,8 +77,8 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     const resetGradient = () => {
-      targetX = 10;
-      targetY = 10;
+      targetX = BASE_X;
+      targetY = BASE_Y;
       if (rafId === null) {
         rafId = requestAnimationFrame(applyGradient);
       }
@@ -45,11 +88,10 @@ document.addEventListener("DOMContentLoaded", () => {
       interactionEnabled = true;
     };
 
-    heroPanel.addEventListener("animationend", enableInteraction, {
-      once: true,
-    });
-    heroPanel.addEventListener("mousemove", handlePointerMove);
-    heroPanel.addEventListener("mouseleave", resetGradient);
+    heroPanel.addEventListener("animationend", enableInteraction, { once: true });
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("pointerleave", resetGradient);
+    window.addEventListener("blur", resetGradient);
   }
 });
 
