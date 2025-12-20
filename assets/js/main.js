@@ -1,5 +1,13 @@
 // Set current year in footer
 document.addEventListener("DOMContentLoaded", () => {
+  const pageRoot = document.documentElement;
+  pageRoot.style.overflow = "hidden";
+  if ("scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  setTimeout(() => window.scrollTo(0, 0), 0);
+
   const yearSpan = document.getElementById("year");
   if (yearSpan) {
     yearSpan.textContent = new Date().getFullYear();
@@ -88,11 +96,19 @@ document.addEventListener("DOMContentLoaded", () => {
       interactionEnabled = true;
     };
 
-    heroPanel.addEventListener("animationend", enableInteraction, { once: true });
+    heroPanel.addEventListener(
+      "animationend",
+      () => {
+        enableInteraction();
+        pageRoot.style.overflow = "";
+      },
+      { once: true }
+    );
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerleave", resetGradient);
     window.addEventListener("blur", resetGradient);
   }
+
 });
 
 // Place for future JS (animations, tracking, etc.)

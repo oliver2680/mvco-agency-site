@@ -32,10 +32,12 @@ a {
 /* Shared container for sections (NOT the hero) */
 .section {
   padding: 4.5rem 1.5rem;
+  background: #f7f4f0;
 }
 
 .section-inner {
   margin: 0 auto;
+  background: #f7f4f0;
 }
 
 h2 {
@@ -83,7 +85,7 @@ p.section-intro {
   grid-template-columns: minmax(0, calc(var(--hero-panel-width) * 1px))
     minmax(0, calc(var(--hero-copy-width) * 1px));
   gap: 48px;
-  padding: 3px 5px 2px 0;
+  padding: 2px 5px 2px 0;
   box-sizing: border-box;
   align-items: center;
   position: absolute;
@@ -149,13 +151,13 @@ p.section-intro {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
+  color: #f7f4f0;
   font-family: "Times New Roman", Times, serif;
   font-weight: 100;
   font-size: clamp(4.6rem, 8vw, 5.8rem);
   transform: translateY(110%);
-  animation: mvco-logo-rise 3s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-  animation-delay: 2s;
+  animation: mvco-logo-rise 2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+  animation-delay: 3s;
   letter-spacing: -0.1em;
 }
 
@@ -248,7 +250,7 @@ p.section-intro {
 
 @keyframes mvco-logo-rise {
   0% {
-    transform: translateY(60%);
+    transform: translateY(10%);
   }
   60% {
     transform: translateY(0%);
@@ -447,67 +449,57 @@ p.section-intro {
   color: #5d5143;
 }
 
-/* ============ 4. Client showcase ============ */
+/* ============ 2. Client showcase ============ */
 
-.client-showcase {
+.client-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.4fr);
+  padding-top: 50px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 2rem;
-  align-items: flex-start;
+  align-items: center;
 }
 
-.logo-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.8rem;
+@media (max-width: 720px) {
+  .client-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .logo-item {
-  background: #fdfaf6;
-  border-radius: 0.9rem;
-  border: 1px solid #e0d6cb;
-  padding: 0.9rem 1.1rem;
-  min-height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.86rem;
-  color: #8b7b68;
+  min-height: 100px;
+  padding: 0.5rem;
+  opacity: 0;
+  transform: translateY(18px);
+  animation: mvco-copy-reveal 0.9s ease-out forwards;
 }
 
-.testimonial {
-  background: #15110f;
-  color: #fdfaf6;
-  border-radius: 1.1rem;
-  padding: 1.4rem 1.3rem;
-  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.3);
-  font-size: 0.94rem;
+.logo-item img {
+  max-height: 110px;
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(0.05);
 }
 
-.testimonial-quote {
-  position: relative;
-  margin-bottom: 1rem;
-  padding-left: 1.1rem;
+.client-grid .logo-item:nth-child(1) {
+  animation-delay: 0.1s;
 }
-
-.testimonial-quote::before {
-  content: "“";
-  position: absolute;
-  left: 0;
-  top: -0.55rem;
-  font-size: 3rem;
-  opacity: 0.18;
-  line-height: 1;
+.client-grid .logo-item:nth-child(2) {
+  animation-delay: 0.2s;
 }
-
-.testimonial-author {
-  font-weight: 500;
-  margin-bottom: 0.15rem;
+.client-grid .logo-item:nth-child(3) {
+  animation-delay: 0.3s;
 }
-
-.testimonial-role {
-  font-size: 0.8rem;
-  opacity: 0.8;
+.client-grid .logo-item:nth-child(4) {
+  animation-delay: 0.4s;
+}
+.client-grid .logo-item:nth-child(5) {
+  animation-delay: 0.5s;
+}
+.client-grid .logo-item:nth-child(6) {
+  animation-delay: 0.6s;
 }
 
 /* ============ Footer ============ */
@@ -579,4 +571,11 @@ footer a {
   .mvco-hero-title {
     font-size: 1.7rem;
   }
+}
+.trusted-heading {
+  font-family: "Times New Roman", Times, serif;
+  font-weight: 100;
+  letter-spacing: -0.05em;
+  font-size: calc(clamp(3.2rem, 8vw, 4.6rem) * 0.75);
+  color: #223515;
 }
