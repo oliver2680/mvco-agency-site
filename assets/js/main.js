@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const heroPanel = document.querySelector(".mvco-hero-panel");
   const heroInner = document.querySelector(".mvco-hero-inner");
+  const clientLogos = document.querySelectorAll("#clients .logo-item");
   if (heroPanel && heroInner) {
     heroPanel.addEventListener(
       "animationstart",
@@ -101,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
       () => {
         enableInteraction();
         pageRoot.style.overflow = "";
+        clientLogos.forEach((logo) => logo.classList.add("logo-visible"));
       },
       { once: true }
     );

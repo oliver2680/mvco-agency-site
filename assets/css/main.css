@@ -1,4 +1,27 @@
 /* ============ Global ============ */
+@font-face {
+  font-family: "Funnel Display";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/FunnelDisplay-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Funnel Display";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/FunnelDisplay-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Funnel Display";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/FunnelDisplay-Semibold.ttf") format("truetype");
+}
 *,
 *::before,
 *::after {
@@ -12,11 +35,20 @@ body {
   min-height: 100%;
 }
 
+/* ============ Typography Scale ============ */
 body {
-  font-family: "Times New Roman", Times, serif;
+  font-family: "Funnel Display", serif;
   background: #f7f4f0;
   color: #15110f;
   line-height: 1.6;
+}
+
+h1 {
+  font-family: "Times New Roman", serif;
+}
+
+p {
+  font-family: "Funnel Display", serif;
 }
 
 img {
@@ -41,9 +73,17 @@ a {
 }
 
 h2 {
+  font-family: "Funnel Display", serif;
   font-size: 1.9rem;
   letter-spacing: -0.03em;
   margin-bottom: 0.5rem;
+}
+
+h3 {
+  font-family: "Funnel Display", serif;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
 }
 
 p.section-intro {
@@ -334,6 +374,7 @@ p.section-intro {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.25rem;
+  padding: 0 clamp(50px, 5vw, 3.5rem);
 }
 
 .case-card {
@@ -451,55 +492,51 @@ p.section-intro {
 
 /* ============ 2. Client showcase ============ */
 
-.client-grid {
-  display: grid;
-  padding-top: 50px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2rem;
-  align-items: center;
+.client-marquee {
+  overflow: hidden;
+  width: 100%;
 }
 
-@media (max-width: 720px) {
-  .client-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.client-marquee__track {
+  display: flex;
+  animation: marquee-scroll 36s linear infinite;
+}
+
+.client-marquee:hover .client-marquee__track {
+  animation-play-state: paused;
 }
 
 .logo-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100px;
+  min-width: min(25vw, 540px);
+  min-height: 180px;
   padding: 0.5rem;
   opacity: 0;
   transform: translateY(18px);
-  animation: mvco-copy-reveal 0.9s ease-out forwards;
 }
 
 .logo-item img {
-  max-height: 110px;
+  height: 100px;
   width: auto;
   object-fit: contain;
   filter: grayscale(0.05);
 }
 
-.client-grid .logo-item:nth-child(1) {
-  animation-delay: 0.1s;
+.logo-item.logo-visible {
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
-.client-grid .logo-item:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.client-grid .logo-item:nth-child(3) {
-  animation-delay: 0.3s;
-}
-.client-grid .logo-item:nth-child(4) {
-  animation-delay: 0.4s;
-}
-.client-grid .logo-item:nth-child(5) {
-  animation-delay: 0.5s;
-}
-.client-grid .logo-item:nth-child(6) {
-  animation-delay: 0.6s;
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 /* ============ Footer ============ */
@@ -572,6 +609,97 @@ footer a {
     font-size: 1.7rem;
   }
 }
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  padding: 0 50px;
+}
+
+.service-card {
+  background: #0d231b;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  position: relative;
+  height: 625px;
+  color: #fdfaf6;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-12px);
+  box-shadow: 0 36px 80px rgba(0, 0, 0, 0.35);
+}
+
+.service-image {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.service-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1);
+  transition: transform 0.45s ease;
+}
+
+.service-card:hover .service-image img {
+  transform: scale(1.04);
+}
+
+.service-info {
+  background: #14271f;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  transform: translateY(58%);
+  transition: transform 0.35s ease;
+}
+
+.service-info h3 {
+  font-family: "Funnel Display", serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin-bottom: 0.6rem;
+  color: #e6f0d4;
+}
+
+.service-description {
+  font-family: "Funnel Display", serif;
+  margin: 0;
+  color: rgba(253, 250, 246, 0.92);
+  line-height: 1.45;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.service-card:hover .service-description {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.service-card:hover .service-info {
+  transform: translateY(0);
+}
+
+@media (max-width: 900px) {
+  .service-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .trusted-heading {
   font-family: "Times New Roman", Times, serif;
   font-weight: 100;
