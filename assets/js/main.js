@@ -21,6 +21,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const baseHeight = heroSection?.dataset?.heroBaseHeight
     ? parseFloat(heroSection.dataset.heroBaseHeight)
     : 760;
+  if (heroSection) {
+    let heroFadeDistance =
+      heroSection.offsetHeight > 0
+        ? heroSection.offsetHeight * 0.65
+        : window.innerHeight * 0.65;
+
+    const clampValue = (value, min, max) => Math.min(max, Math.max(min, value));
+
+    const updateHeroFadeDistance = () => {
+      heroFadeDistance =
+        heroSection.offsetHeight > 0
+          ? heroSection.offsetHeight * 0.65
+          : window.innerHeight * 0.65;
+      handleHeroFade();
+    };
+
+    const handleHeroFade = () => {
+      const scrolled = window.scrollY || window.pageYOffset || 0;
+      const fadeProgress = clampValue(scrolled / heroFadeDistance, 0, 1);
+      heroSection.style.opacity = `${1 - fadeProgress}`;
+    };
+
+    window.addEventListener("scroll", handleHeroFade, { passive: true });
+    window.addEventListener("resize", updateHeroFadeDistance);
+    handleHeroFade();
+  }
 
   const updateHeroScale = () => {
     if (!heroSection || !heroStage || !baseWidth || !baseHeight) return;
@@ -111,6 +137,23 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("blur", resetGradient);
   }
 
+  const scrollHeader = document.getElementById("scrollHeader");
+  if (scrollHeader && heroSection) {
+    const handleHeaderToggle = (entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      if (entry.isIntersecting) {
+        scrollHeader.classList.remove("is-visible");
+      } else {
+        scrollHeader.classList.add("is-visible");
+      }
+    };
+
+    const headerObserver = new IntersectionObserver(handleHeaderToggle, {
+      threshold: 0.9,
+    });
+    headerObserver.observe(heroSection);
+  }
 });
 
 // Place for future JS (animations, tracking, etc.)
