@@ -37,6 +37,9 @@ body {
 
 :root {
   --service-info-bg: #14271f;
+  --case-tile-bg-1: #1A5342;
+  --case-tile-bg-2: #1B3B53;
+  --case-tile-bg-3: #53441B;
 }
 
 /* ============ Typography Scale ============ */
@@ -137,8 +140,12 @@ a {
   background: #f7f4f0;
 }
 
+#problem-framing.section {
+  padding-bottom: 0;
+}
+
 #clients.section {
-  padding: 0;
+  padding-top: 0;
 }
 
 .section-inner {
@@ -156,6 +163,23 @@ a {
 
 #services .section-intro {
   color: rgba(253, 250, 246, 0.85);
+}
+
+#case-studies.section {
+  background: rgb(20, 39, 31);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#case-studies .section-inner {
+  background: rgb(20, 39, 31);
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+#case-studies .section-intro {
+  color: rgba(253, 250, 246, 0.8);
 }
 
 .problem-framing .section-inner {
@@ -614,64 +638,115 @@ p.section-intro {
 
 /* ============ 2. Case Studies ============ */
 
-.case-studies-grid {
+.case-tiles-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.25rem;
-  padding: 0 clamp(50px, 5vw, 3.5rem);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 460px);
+  background: rgb(20, 39, 31);
 }
 
-.case-card {
+.case-tile {
+  position: relative;
+  overflow: hidden;
   background: #fdfaf6;
-  border-radius: 1rem;
-  padding: 1.2rem 1.1rem 1rem;
-  border: 1px solid #e0d6cb;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease,
-    border-color 0.15s ease;
-}
-
-.case-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.09);
-  border-color: #15110f;
-}
-
-.case-label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: #8b7b68;
-  margin-bottom: 0.3rem;
-}
-
-.case-title {
-  font-weight: 600;
-  font-size: 1.02rem;
-  margin-bottom: 0.35rem;
-  letter-spacing: -0.015em;
-}
-
-.case-card p {
-  font-size: 0.9rem;
-  color: #5d5143;
-}
-
-.case-meta {
+  min-height: 320px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.8rem;
-  font-size: 0.78rem;
-  color: #8b7b68;
+  align-items: stretch;
+  justify-content: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
 }
 
-.case-pill {
-  padding: 0.22rem 0.7rem;
-  border-radius: 999px;
-  border: 1px solid #e0d6cb;
-  background: #fbf6ef;
+.case-tile--image {
+  background-size: cover;
+  background-position: center;
+}
+
+.case-tile--text {
+  background: var(--case-tile-bg, rgba(247, 244, 240, 0.98));
+  --case-tile-text: color-mix(in srgb, var(--case-tile-bg, rgba(247, 244, 240, 0.98)) 5%, white 95%);
+  color: var(--case-tile-text);
+  padding: clamp(1.5rem, 3vw, 2.8rem);
+  display: flex;
+  flex-direction: column;
+  justify-content:center;
+}
+
+.case-tile--one {
+  --case-tile-bg: var(--case-tile-bg-1);
+}
+
+.case-tile--two {
+  --case-tile-bg: var(--case-tile-bg-2);
+}
+
+.case-tile--three {
+  --case-tile-bg: var(--case-tile-bg-3);
+}
+
+.case-tile__content h3 {
+  font-family: "Funnel Display", serif;
+  font-size: 2rem;
+  color: inherit;
+  margin-bottom: 3rem;
+  line-height: 2rem;
+}
+
+.case-tile__content p {
+  margin: 0;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--case-tile-text) 85%, rgba(0, 0, 0, 0.25));
+}
+
+.case-tile__overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  padding: clamp(1.5rem, 3vw, 3rem);
+  background: #002c40;
+  color: #f0fbff;
+  transition: transform 1.5s ease;
+  transform: translateY(100%);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+}
+
+.case-tile__overlay h4,
+.case-tile__overlay h5 {
+  font-family: "Funnel Display", serif;
+  margin-bottom: 0.5rem;
+}
+
+.case-tile__overlay h4 {
+  font-size: 1.3rem;
+}
+
+.case-tile__overlay h5 {
+  margin-top: 3rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.case-tile__overlay ul {
+  padding-left: 1rem;
+  margin: 0.5rem 0 0;
+  line-height: 1.4;
+  list-style: disc;
+}
+
+.case-tile--text:hover .case-tile__overlay {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+@media (max-width: 960px) {
+  .case-tiles-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
 }
 
 /* ============ 3. Services (accordions) ============ */

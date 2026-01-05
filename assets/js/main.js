@@ -194,8 +194,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const BASE_SPEED = 50; // pixels per second
     const MIN_SPEED = 30;
-    const MAX_SPEED = 80;
-    const CHANGE_PER_SCROLL = 20;
+    const MAX_SPEED = 60;
+    const CHANGE_PER_SCROLL = 10;
     const SMOOTHING = 0.5;
 
     let currentSpeed = BASE_SPEED;
@@ -257,6 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("wheel", handleWheel, { passive: true });
   }
 
+  const caseStudiesSection = document.getElementById("case-studies");
   const scrollHeader = document.getElementById("scrollHeader");
   if (scrollHeader && heroSection) {
     const handleHeaderToggle = (entries) => {
@@ -277,7 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const problemSection = document.getElementById("problem-framing");
 
-  if (scrollHeader && (servicesSection || problemSection)) {
+  if (scrollHeader && (servicesSection || problemSection || caseStudiesSection)) {
     const lerp = (start, end, amount) => start + (end - start) * amount;
     const mixColor = (from, to, amount) => ({
       r: lerp(from.r, to.r, amount),
@@ -396,9 +397,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const updateHeaderTheme = () => {
       const problemRatio = progressThroughSection(problemSection);
       const servicesRatio = progressThroughSection(servicesSection);
+      const caseRatio = progressThroughSection(caseStudiesSection);
+      const darkRatio = Math.max(servicesRatio, caseRatio);
 
-      if (servicesRatio > 0) {
-        applyTheme(servicesTheme, servicesTheme, servicesRatio);
+      if (darkRatio > 0) {
+        applyTheme(servicesTheme, servicesTheme, darkRatio);
       } else if (problemRatio > 0) {
         applyTheme({ bg: defaultTheme.bg, border: defaultTheme.border }, problemTheme, problemRatio);
       } else {
