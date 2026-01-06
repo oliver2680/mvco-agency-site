@@ -16,6 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const heroSection = document.querySelector(".mvco-hero");
   const heroStage = document.querySelector(".mvco-hero-stage");
   const heroTitle = document.querySelector(".mvco-hero-title");
+  const mobileHeroQuery =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 640px)")
+      : null;
   const servicesSection = document.getElementById("services");
   const baseWidth = heroSection?.dataset?.heroBaseWidth
     ? parseFloat(heroSection.dataset.heroBaseWidth)
@@ -38,10 +42,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const heroPanel = document.querySelector(".mvco-hero-panel");
   const heroInner = document.querySelector(".mvco-hero-inner");
   const clientLogos = document.querySelectorAll("#clients .logo-item");
+  const heroCopy = document.querySelector(".mvco-hero-copy");
 
   let heroTitleRaf = null;
   const updateHeroTitleScroll = () => {
     if (!heroTitle || !heroSection) {
+      heroTitleRaf = null;
+      return;
+    }
+    if (mobileHeroQuery?.matches) {
+      heroTitle.style.transform = "";
       heroTitleRaf = null;
       return;
     }
@@ -68,6 +78,8 @@ document.addEventListener("DOMContentLoaded", () => {
       { once: true }
     );
   }
+
+  let heroPanelMobileZoomEnabled = false;
 
   if (heroPanel) {
     let rafId = null;
@@ -136,6 +148,130 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("pointerleave", resetGradient);
     window.addEventListener("blur", resetGradient);
+  }
+
+  const updateMobilePanelScale = () => {
+    if (!heroPanel || !mobileHeroQuery?.matches) {
+      return;
+    }
+    const panelRect = heroPanel.getBoundingClientRect();
+    const panelHeight = panelRect.height || 0;
+    if (!panelHeight) {
+      return;
+    }
+    const viewportHeight =
+      window.innerHeight ||
+      document.documentElement?.clientHeight ||
+      panelHeight;
+    const paddingOffset = 10;
+    const targetHeight = Math.max(viewportHeight - paddingOffset, 0);
+    const scale = Math.max(1, targetHeight / panelHeight);
+    heroPanel.style.setProperty("--panel-mobile-zoom-scale", scale.toFixed(4));
+  };
+
+  const applyMobileHeroZoomState = () => {
+    if (!heroPanel || !mobileHeroQuery) {
+      return;
+    }
+    if (mobileHeroQuery.matches) {
+      heroPanel.classList.add("mvco-hero-panel--mobile-zoom");
+      heroPanelMobileZoomEnabled = true;
+      updateMobilePanelScale();
+    } else if (heroPanelMobileZoomEnabled) {
+      heroPanel.classList.remove("mvco-hero-panel--mobile-zoom");
+      heroPanelMobileZoomEnabled = false;
+      heroPanel.style.removeProperty("--panel-mobile-zoom-scale");
+    }
+  };
+
+  if (heroPanel && mobileHeroQuery) {
+    applyMobileHeroZoomState();
+    if (typeof mobileHeroQuery.addEventListener === "function") {
+      mobileHeroQuery.addEventListener("change", applyMobileHeroZoomState);
+    } else if (typeof mobileHeroQuery.addListener === "function") {
+      mobileHeroQuery.addListener(applyMobileHeroZoomState);
+    }
+  }
+
+  let heroCopyObserver = null;
+
+  const measureHeroCopyHeight = () =>
+    heroCopy ? heroCopy.getBoundingClientRect().height : 0;
+
+  const setHeroCopyOffset = (height) => {
+    if (!heroSection) {
+      return;
+    }
+    heroSection.style.setProperty(
+      "--hero-copy-height",
+      `${Math.max(height, 0)}px`
+    );
+  };
+
+  const toggleHeroCopyFixed = (shouldFix) => {
+    if (!heroCopy) {
+      return;
+    }
+    heroCopy.classList.toggle("mvco-hero-copy--fixed", shouldFix);
+    setHeroCopyOffset(shouldFix ? measureHeroCopyHeight() : 0);
+  };
+
+  const handleHeroIntersection = (entries) => {
+    const entry = entries[0];
+    toggleHeroCopyFixed(Boolean(entry && entry.isIntersecting));
+  };
+
+  const attachHeroCopyObserver = () => {
+    if (!heroCopy || !heroSection || heroCopyObserver) {
+      return;
+    }
+    heroCopyObserver = new IntersectionObserver(handleHeroIntersection, {
+      threshold: 0,
+    });
+    heroCopyObserver.observe(heroSection);
+  };
+
+  const detachHeroCopyObserver = () => {
+    if (heroCopyObserver) {
+      heroCopyObserver.disconnect();
+      heroCopyObserver = null;
+    }
+  };
+
+  const syncHeroCopyState = () => {
+    if (!heroCopy || !mobileHeroQuery) {
+      return;
+    }
+    if (!mobileHeroQuery.matches) {
+      detachHeroCopyObserver();
+      heroCopy.classList.remove("mvco-hero-copy--fixed");
+      setHeroCopyOffset(0);
+      return;
+    }
+    attachHeroCopyObserver();
+    const heroRect = heroSection?.getBoundingClientRect();
+    const heroVisible = heroRect
+      ? heroRect.bottom > 0 && heroRect.top < window.innerHeight
+      : true;
+    toggleHeroCopyFixed(heroVisible);
+  };
+
+  if (heroCopy && heroSection && mobileHeroQuery) {
+    syncHeroCopyState();
+    if (typeof mobileHeroQuery.addEventListener === "function") {
+      mobileHeroQuery.addEventListener("change", syncHeroCopyState);
+    } else if (typeof mobileHeroQuery.addListener === "function") {
+      mobileHeroQuery.addListener(syncHeroCopyState);
+    }
+    window.addEventListener("resize", () => {
+      if (!mobileHeroQuery.matches) {
+        return;
+      }
+      updateMobilePanelScale();
+      if (heroCopy.classList.contains("mvco-hero-copy--fixed")) {
+        setHeroCopyOffset(measureHeroCopyHeight());
+      }
+    });
   }
 
   const marqueeTrack = document.querySelector(".client-marquee__track");
