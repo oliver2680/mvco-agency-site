@@ -201,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.innerHeight ||
       document.documentElement?.clientHeight ||
       panelSize;
-    const paddingOffset = -100;
+    const paddingOffset = -1000;
     const targetHeight = Math.max(viewportHeight - paddingOffset, panelSize);
     const scale = Math.max(1, targetHeight / panelSize);
     heroPanel.style.setProperty("--panel-mobile-zoom-scale", scale.toFixed(4));
