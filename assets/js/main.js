@@ -34,9 +34,34 @@ document.addEventListener("DOMContentLoaded", () => {
     heroSection.style.setProperty("--hero-scale", scale);
   };
 
+  const syncHeroTitleCopy = () => {
+    if (!heroTitle || !mobileHeroQuery) {
+      return;
+    }
+    const mobileText = heroTitle.dataset.mobileText;
+    if (!mobileText) {
+      return;
+    }
+    if (!heroTitle.dataset.desktopText) {
+      heroTitle.dataset.desktopText = heroTitle.textContent?.trim() || "";
+    }
+    heroTitle.textContent = mobileHeroQuery.matches
+      ? mobileText
+      : heroTitle.dataset.desktopText;
+  };
+
   if (heroSection && heroStage) {
     updateHeroScale();
     window.addEventListener("resize", updateHeroScale);
+  }
+
+  if (heroTitle && mobileHeroQuery) {
+    syncHeroTitleCopy();
+    if (typeof mobileHeroQuery.addEventListener === "function") {
+      mobileHeroQuery.addEventListener("change", syncHeroTitleCopy);
+    } else if (typeof mobileHeroQuery.addListener === "function") {
+      mobileHeroQuery.addListener(syncHeroTitleCopy);
+    }
   }
 
   const heroPanel = document.querySelector(".mvco-hero-panel");
@@ -80,6 +105,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let heroPanelMobileZoomEnabled = false;
+  let heroPanelMobileZoomTimeout = null;
+
+  const revealMobileHeroCopy = () => {
+    if (heroPanelMobileZoomTimeout !== null) {
+      clearTimeout(heroPanelMobileZoomTimeout);
+      heroPanelMobileZoomTimeout = null;
+    }
+    if (!mobileHeroQuery?.matches) {
+      return;
+    }
+    heroCopy?.classList.add("mvco-hero-copy--ready");
+  };
 
   if (heroPanel) {
     let rafId = null;
@@ -135,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
         enableInteraction();
         pageRoot.style.overflow = "";
         clientLogos.forEach((logo) => logo.classList.add("logo-visible"));
+        requestAnimationFrame(revealMobileHeroCopy);
         if (heroTitle) {
           window.addEventListener("scroll", handleHeroTitleScroll, {
             passive: true,
@@ -154,18 +192,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!heroPanel || !mobileHeroQuery?.matches) {
       return;
     }
-    const panelRect = heroPanel.getBoundingClientRect();
-    const panelHeight = panelRect.height || 0;
-    if (!panelHeight) {
+    const panelSize = heroPanel.offsetWidth || heroPanel.clientWidth || 0;
+    if (!panelSize) {
       return;
     }
     const viewportHeight =
+      window.visualViewport?.height ||
       window.innerHeight ||
       document.documentElement?.clientHeight ||
-      panelHeight;
-    const paddingOffset = 10;
-    const targetHeight = Math.max(viewportHeight - paddingOffset, 0);
-    const scale = Math.max(1, targetHeight / panelHeight);
+      panelSize;
+    const paddingOffset = -100;
+    const targetHeight = Math.max(viewportHeight - paddingOffset, panelSize);
+    const scale = Math.max(1, targetHeight / panelSize);
     heroPanel.style.setProperty("--panel-mobile-zoom-scale", scale.toFixed(4));
   };
 
@@ -174,13 +212,28 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     if (mobileHeroQuery.matches) {
+      updateMobilePanelScale();
       heroPanel.classList.add("mvco-hero-panel--mobile-zoom");
       heroPanelMobileZoomEnabled = true;
-      updateMobilePanelScale();
+      heroCopy?.classList.remove("mvco-hero-copy--ready");
+      if (heroPanelMobileZoomTimeout !== null) {
+        clearTimeout(heroPanelMobileZoomTimeout);
+      }
+      heroPanelMobileZoomTimeout = window.setTimeout(
+        () => {
+          revealMobileHeroCopy();
+        },
+        3400
+      );
     } else if (heroPanelMobileZoomEnabled) {
       heroPanel.classList.remove("mvco-hero-panel--mobile-zoom");
       heroPanelMobileZoomEnabled = false;
       heroPanel.style.removeProperty("--panel-mobile-zoom-scale");
+      heroCopy?.classList.add("mvco-hero-copy--ready");
+      if (heroPanelMobileZoomTimeout !== null) {
+        clearTimeout(heroPanelMobileZoomTimeout);
+        heroPanelMobileZoomTimeout = null;
+      }
     }
   };
 
