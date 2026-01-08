@@ -410,8 +410,8 @@ p.section-intro {
 
 /* Left panel with gradient / video + logo (Hero gradient block) */
 .mvco-hero-panel {
-  --panel-gradient-x: 16%;
-  --panel-gradient-y: 10%;
+  --panel-gradient-x: 26%;
+  --panel-gradient-y: 20%;
   position: relative;
   border-radius: 9px;
   overflow: hidden;
@@ -419,14 +419,14 @@ p.section-intro {
   min-height: 100%;
   width: 100%;
   background: radial-gradient(
-    circle at var(--panel-gradient-x, 16%) var(--panel-gradient-y, 10%),
+    ellipse at var(--panel-gradient-x, 46%) var(--panel-gradient-y, 40%),
     #212b32 10%,
     #193e59 40%,
     #223515 65%,
     #0c1c06 90%
   );
   transform-origin: inherit;
-  animation: mvco-panel-intro 5s ease-out forwards;
+  animation: mvco-panel-intro 4s ease-out forwards;
   transition: background 0.4s ease;
 }
 
@@ -1024,7 +1024,7 @@ footer a {
     position: fixed;
     /*left: 5px;*/
     right: 5px;
-    bottom: 6rem;
+    bottom: 5px;
     z-index: 10;
   }
 
