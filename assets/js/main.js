@@ -1,39 +1,26 @@
 // Set current year in footer
 document.addEventListener("DOMContentLoaded", () => {
-  const pageRoot = document.documentElement;
-  pageRoot.style.overflow = "hidden";
-  if ("scrollRestoration" in history) {
-    history.scrollRestoration = "manual";
-  }
-  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-  setTimeout(() => window.scrollTo(0, 0), 0);
-
   const yearSpan = document.getElementById("year");
   if (yearSpan) {
     yearSpan.textContent = new Date().getFullYear();
   }
 
   const heroSection = document.querySelector(".mvco-hero");
-  const heroStage = document.querySelector(".mvco-hero-stage");
+  const heroInner = document.querySelector(".mvco-hero-inner");
+  const heroPanel = document.querySelector(".mvco-hero-panel");
+  const heroCopy = document.querySelector(".mvco-hero-copy");
+  const heroLogo = document.querySelector(".mvco-hero-logo");
   const heroTitle = document.querySelector(".mvco-hero-title");
+  const heroVideo = document.querySelector(".mvco-hero-video");
+  const desktopHeroQuery =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(min-width: 901px)")
+      : null;
   const mobileHeroQuery =
     typeof window.matchMedia === "function"
       ? window.matchMedia("(max-width: 640px)")
       : null;
   const servicesSection = document.getElementById("services");
-  const baseWidth = heroSection?.dataset?.heroBaseWidth
-    ? parseFloat(heroSection.dataset.heroBaseWidth)
-    : 1200;
-  const baseHeight = heroSection?.dataset?.heroBaseHeight
-    ? parseFloat(heroSection.dataset.heroBaseHeight)
-    : 760;
-  const updateHeroScale = () => {
-    if (!heroSection || !heroStage || !baseWidth || !baseHeight) return;
-    const heightRatio = window.innerHeight / baseHeight;
-    const scale = heightRatio;
-    heroSection.style.setProperty("--hero-scale", scale);
-  };
-
   const syncHeroTitleCopy = () => {
     if (!heroTitle || !mobileHeroQuery) {
       return;
@@ -42,18 +29,126 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!mobileText) {
       return;
     }
-    if (!heroTitle.dataset.desktopText) {
-      heroTitle.dataset.desktopText = heroTitle.textContent?.trim() || "";
+    if (!heroTitle.dataset.desktopHtml) {
+      heroTitle.dataset.desktopHtml = heroTitle.innerHTML.trim();
     }
-    heroTitle.textContent = mobileHeroQuery.matches
-      ? mobileText
-      : heroTitle.dataset.desktopText;
+    if (mobileHeroQuery.matches) {
+      heroTitle.textContent = mobileText;
+    } else {
+      heroTitle.innerHTML = heroTitle.dataset.desktopHtml;
+    }
   };
 
-  if (heroSection && heroStage) {
-    updateHeroScale();
-    window.addEventListener("resize", updateHeroScale);
+  if (heroVideo) {
+    heroVideo.playbackRate = 0.75;
   }
+
+  const lockScroll = () => {
+    document.documentElement.classList.add("hero-lock");
+    document.body.classList.add("hero-lock");
+  };
+
+  const unlockScroll = () => {
+    document.documentElement.classList.remove("hero-lock");
+    document.body.classList.remove("hero-lock");
+  };
+
+  const setHeroPanelScale = () => {
+    if (!heroSection || !heroInner || !heroPanel) {
+      return;
+    }
+    const innerWidth = heroInner.getBoundingClientRect().width;
+    const panelWidth = heroPanel.getBoundingClientRect().width;
+    if (!innerWidth || !panelWidth) {
+      return;
+    }
+    const scaleX = innerWidth / panelWidth;
+    heroSection.style.setProperty("--hero-panel-scale-x", scaleX.toFixed(4));
+  };
+
+  let heroParallaxRaf = null;
+  let heroIntroComplete = false;
+  const updateHeroCopyParallax = () => {
+    if (!heroCopy || !heroSection || !desktopHeroQuery?.matches) {
+      heroParallaxRaf = null;
+      return;
+    }
+    const heroHeight = heroSection.offsetHeight || window.innerHeight;
+    const scrollTop = window.scrollY || window.pageYOffset || 0;
+    const progress = Math.max(0, Math.min(1, scrollTop / heroHeight));
+    const translateY = -progress * heroHeight * 0.3;
+    heroCopy.style.transform = `translateY(${translateY.toFixed(2)}px)`;
+    if (heroLogo) {
+      heroLogo.style.transform = `translateY(${Math.abs(translateY).toFixed(2)}px)`;
+    }
+    heroParallaxRaf = null;
+  };
+
+  const handleHeroScroll = () => {
+    if (heroParallaxRaf !== null) {
+      return;
+    }
+    heroParallaxRaf = requestAnimationFrame(updateHeroCopyParallax);
+  };
+
+  const startHeroIntro = () => {
+    if (
+      heroIntroComplete ||
+      !heroSection ||
+      !heroInner ||
+      !heroPanel ||
+      !desktopHeroQuery?.matches
+    ) {
+      return;
+    }
+    setHeroPanelScale();
+    heroSection.classList.add("hero-animating");
+    lockScroll();
+
+    let pending = 0;
+    let introResolved = false;
+    const completeIntro = () => {
+      if (introResolved) {
+        return;
+      }
+      introResolved = true;
+      heroSection.classList.remove("hero-animating");
+      unlockScroll();
+      heroIntroComplete = true;
+      handleHeroScroll();
+      window.addEventListener("scroll", handleHeroScroll, { passive: true });
+      window.addEventListener("resize", handleHeroScroll);
+    };
+
+    const trackAnimationEnd = (element, name) => {
+      if (!element) {
+        return;
+      }
+      pending += 1;
+      const handler = (event) => {
+        if (event.animationName !== name) {
+          return;
+        }
+        element.removeEventListener("animationend", handler);
+        pending -= 1;
+        if (pending <= 0) {
+          completeIntro();
+        }
+      };
+      element.addEventListener("animationend", handler);
+    };
+
+    trackAnimationEnd(heroPanel, "mvco-hero-panel-intro");
+    trackAnimationEnd(heroCopy, "mvco-hero-copy-intro");
+    trackAnimationEnd(heroLogo, "mvco-hero-logo-rise");
+
+    if (pending === 0) {
+      completeIntro();
+      return;
+    }
+
+    window.setTimeout(completeIntro, 4500);
+  };
 
   if (heroTitle && mobileHeroQuery) {
     syncHeroTitleCopy();
@@ -64,268 +159,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  const heroPanel = document.querySelector(".mvco-hero-panel");
-  const heroInner = document.querySelector(".mvco-hero-inner");
-  const clientLogos = document.querySelectorAll("#clients .logo-item");
-  const heroCopy = document.querySelector(".mvco-hero-copy");
-
-  let heroTitleRaf = null;
-  const updateHeroTitleScroll = () => {
-    if (!heroTitle || !heroSection) {
-      heroTitleRaf = null;
-      return;
-    }
-    if (mobileHeroQuery?.matches) {
-      heroTitle.style.transform = "";
-      heroTitleRaf = null;
-      return;
-    }
-    const heroHeight = heroSection.offsetHeight || window.innerHeight;
-    const scrollTop = window.scrollY || window.pageYOffset || 0;
-    const progress = Math.max(0, Math.min(1.2, scrollTop / heroHeight));
-    const translateY = -progress * heroHeight * 0.15;
-    heroTitle.style.transform = `translateY(${translateY}px)`;
-    heroTitleRaf = null;
-  };
-
-  const handleHeroTitleScroll = () => {
-    if (heroTitleRaf !== null) return;
-    heroTitleRaf = requestAnimationFrame(updateHeroTitleScroll);
-  };
-  if (heroPanel && heroInner) {
-    heroPanel.addEventListener(
-      "animationstart",
-      () => {
-        setTimeout(() => {
-          heroInner.classList.add("hero-padding-active");
-        }, 1800);
-      },
-      { once: true }
-    );
+  if (desktopHeroQuery?.matches) {
+    requestAnimationFrame(startHeroIntro);
   }
 
-  let heroPanelMobileZoomEnabled = false;
-  let heroPanelMobileZoomTimeout = null;
-
-  const revealMobileHeroCopy = () => {
-    if (heroPanelMobileZoomTimeout !== null) {
-      clearTimeout(heroPanelMobileZoomTimeout);
-      heroPanelMobileZoomTimeout = null;
-    }
-    if (!mobileHeroQuery?.matches) {
-      return;
-    }
-    heroCopy?.classList.add("mvco-hero-copy--ready");
-  };
-
-  if (heroPanel) {
-    let rafId = null;
-    const BASE_X = 16;
-    const BASE_Y = 10;
-    const RANGE_X = 22;
-    const RANGE_Y = 16;
-    let targetX = BASE_X;
-    let targetY = BASE_Y;
-    let interactionEnabled = false;
-
-    const applyGradient = () => {
-      heroPanel.style.setProperty("--panel-gradient-x", `${targetX}%`);
-      heroPanel.style.setProperty("--panel-gradient-y", `${targetY}%`);
-      rafId = null;
-    };
-
-    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
-    const handlePointerMove = (event) => {
-      if (!interactionEnabled) {
-        return;
-      }
-      const viewportWidth = window.innerWidth || 1;
-      const viewportHeight = window.innerHeight || 1;
-      const xRatio = event.clientX / viewportWidth;
-      const yRatio = event.clientY / viewportHeight;
-      const desiredX = BASE_X + (xRatio - 0.5) * RANGE_X;
-      const desiredY = BASE_Y + (yRatio - 0.5) * RANGE_Y;
-      targetX = clamp(desiredX, BASE_X - RANGE_X / 2, BASE_X + RANGE_X / 2);
-      targetY = clamp(desiredY, BASE_Y - RANGE_Y / 2, BASE_Y + RANGE_Y / 2);
-
-      if (rafId === null) {
-        rafId = requestAnimationFrame(applyGradient);
-      }
-    };
-
-    const resetGradient = () => {
-      targetX = BASE_X;
-      targetY = BASE_Y;
-      if (rafId === null) {
-        rafId = requestAnimationFrame(applyGradient);
-      }
-    };
-
-    const enableInteraction = () => {
-      interactionEnabled = true;
-    };
-
-    heroPanel.addEventListener(
-      "animationend",
-      () => {
-        enableInteraction();
-        pageRoot.style.overflow = "";
-        clientLogos.forEach((logo) => logo.classList.add("logo-visible"));
-        requestAnimationFrame(revealMobileHeroCopy);
-        if (heroTitle) {
-          window.addEventListener("scroll", handleHeroTitleScroll, {
-            passive: true,
-          });
-          window.addEventListener("resize", handleHeroTitleScroll);
-          handleHeroTitleScroll();
+  if (desktopHeroQuery) {
+    desktopHeroQuery.addEventListener("change", (event) => {
+      if (!event.matches) {
+        unlockScroll();
+        if (heroCopy) {
+          heroCopy.style.transform = "";
         }
-      },
-      { once: true }
-    );
-    window.addEventListener("pointermove", handlePointerMove, { passive: true });
-    window.addEventListener("pointerleave", resetGradient);
-    window.addEventListener("blur", resetGradient);
-  }
-
-  const updateMobilePanelScale = () => {
-    if (!heroPanel || !mobileHeroQuery?.matches) {
-      return;
-    }
-    const panelSize = heroPanel.offsetWidth || heroPanel.clientWidth || 0;
-    if (!panelSize) {
-      return;
-    }
-    const viewportHeight =
-      window.visualViewport?.height ||
-      window.innerHeight ||
-      document.documentElement?.clientHeight ||
-      panelSize;
-    const paddingOffset = -1000;
-    const targetHeight = Math.max(viewportHeight - paddingOffset, panelSize);
-    const scale = Math.max(1, targetHeight / panelSize);
-    heroPanel.style.setProperty("--panel-mobile-zoom-scale", scale.toFixed(4));
-  };
-
-  const applyMobileHeroZoomState = () => {
-    if (!heroPanel || !mobileHeroQuery) {
-      return;
-    }
-    if (mobileHeroQuery.matches) {
-      updateMobilePanelScale();
-      heroPanel.classList.add("mvco-hero-panel--mobile-zoom");
-      heroPanelMobileZoomEnabled = true;
-      heroCopy?.classList.remove("mvco-hero-copy--ready");
-      if (heroPanelMobileZoomTimeout !== null) {
-        clearTimeout(heroPanelMobileZoomTimeout);
-      }
-      heroPanelMobileZoomTimeout = window.setTimeout(
-        () => {
-          revealMobileHeroCopy();
-        },
-        3400
-      );
-    } else if (heroPanelMobileZoomEnabled) {
-      heroPanel.classList.remove("mvco-hero-panel--mobile-zoom");
-      heroPanelMobileZoomEnabled = false;
-      heroPanel.style.removeProperty("--panel-mobile-zoom-scale");
-      heroCopy?.classList.add("mvco-hero-copy--ready");
-      if (heroPanelMobileZoomTimeout !== null) {
-        clearTimeout(heroPanelMobileZoomTimeout);
-        heroPanelMobileZoomTimeout = null;
-      }
-    }
-  };
-
-  if (heroPanel && mobileHeroQuery) {
-    applyMobileHeroZoomState();
-    if (typeof mobileHeroQuery.addEventListener === "function") {
-      mobileHeroQuery.addEventListener("change", applyMobileHeroZoomState);
-    } else if (typeof mobileHeroQuery.addListener === "function") {
-      mobileHeroQuery.addListener(applyMobileHeroZoomState);
-    }
-  }
-
-  let heroCopyObserver = null;
-
-  const measureHeroCopyHeight = () =>
-    heroCopy ? heroCopy.getBoundingClientRect().height : 0;
-
-  const setHeroCopyOffset = (height) => {
-    if (!heroSection) {
-      return;
-    }
-    heroSection.style.setProperty(
-      "--hero-copy-height",
-      `${Math.max(height, 0)}px`
-    );
-  };
-
-  const toggleHeroCopyFixed = (shouldFix) => {
-    if (!heroCopy) {
-      return;
-    }
-    heroCopy.classList.toggle("mvco-hero-copy--fixed", shouldFix);
-    setHeroCopyOffset(shouldFix ? measureHeroCopyHeight() : 0);
-  };
-
-  const handleHeroIntersection = (entries) => {
-    const entry = entries[0];
-    toggleHeroCopyFixed(Boolean(entry && entry.isIntersecting));
-  };
-
-  const attachHeroCopyObserver = () => {
-    if (!heroCopy || !heroSection || heroCopyObserver) {
-      return;
-    }
-    heroCopyObserver = new IntersectionObserver(handleHeroIntersection, {
-      threshold: 0,
-    });
-    heroCopyObserver.observe(heroSection);
-  };
-
-  const detachHeroCopyObserver = () => {
-    if (heroCopyObserver) {
-      heroCopyObserver.disconnect();
-      heroCopyObserver = null;
-    }
-  };
-
-  const syncHeroCopyState = () => {
-    if (!heroCopy || !mobileHeroQuery) {
-      return;
-    }
-    if (!mobileHeroQuery.matches) {
-      detachHeroCopyObserver();
-      heroCopy.classList.remove("mvco-hero-copy--fixed");
-      setHeroCopyOffset(0);
-      return;
-    }
-    attachHeroCopyObserver();
-    const heroRect = heroSection?.getBoundingClientRect();
-    const heroVisible = heroRect
-      ? heroRect.bottom > 0 && heroRect.top < window.innerHeight
-      : true;
-    toggleHeroCopyFixed(heroVisible);
-  };
-
-  if (heroCopy && heroSection && mobileHeroQuery) {
-    syncHeroCopyState();
-    if (typeof mobileHeroQuery.addEventListener === "function") {
-      mobileHeroQuery.addEventListener("change", syncHeroCopyState);
-    } else if (typeof mobileHeroQuery.addListener === "function") {
-      mobileHeroQuery.addListener(syncHeroCopyState);
-    }
-    window.addEventListener("resize", () => {
-      if (!mobileHeroQuery.matches) {
         return;
       }
-      updateMobilePanelScale();
-      if (heroCopy.classList.contains("mvco-hero-copy--fixed")) {
-        setHeroCopyOffset(measureHeroCopyHeight());
-      }
+      requestAnimationFrame(startHeroIntro);
     });
   }
+
+  window.addEventListener("resize", setHeroPanelScale);
 
   const marqueeTrack = document.querySelector(".client-marquee__track");
   if (marqueeTrack) {
@@ -446,8 +297,67 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("wheel", handleWheel, { passive: true });
   }
 
+  const caseTileButtons = document.querySelectorAll(".case-tile__toggle");
+  const caseTileQuery =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 1024px)")
+      : null;
+
+  const resetCaseTiles = () => {
+    if (!caseTileQuery || caseTileQuery.matches) {
+      return;
+    }
+    caseTileButtons.forEach((button) => {
+      const tile = button.closest(".case-tile--text");
+      if (tile) {
+        tile.classList.remove("case-tile--open");
+      }
+      button.setAttribute("aria-expanded", "false");
+    });
+  };
+
+  if (caseTileButtons.length && caseTileQuery) {
+    caseTileButtons.forEach((button) => {
+      button.setAttribute("aria-expanded", "false");
+      button.addEventListener("click", () => {
+        if (!caseTileQuery.matches) {
+          return;
+        }
+        const tile = button.closest(".case-tile--text");
+        if (!tile) {
+          return;
+        }
+        tile.classList.add("case-tile--open");
+        button.setAttribute("aria-expanded", "true");
+        button.disabled = true;
+      });
+    });
+
+    if (typeof caseTileQuery.addEventListener === "function") {
+      caseTileQuery.addEventListener("change", resetCaseTiles);
+    } else if (typeof caseTileQuery.addListener === "function") {
+      caseTileQuery.addListener(resetCaseTiles);
+    }
+  }
+
   const caseStudiesSection = document.getElementById("case-studies");
   const scrollHeader = document.getElementById("scrollHeader");
+  const updateScrollHeaderOffset = () => {
+    if (!scrollHeader) {
+      return;
+    }
+    const headerHeight = scrollHeader.getBoundingClientRect().height || 0;
+    document.documentElement.style.setProperty(
+      "--scroll-header-offset",
+      `${headerHeight}px`
+    );
+  };
+
+  if (scrollHeader) {
+    updateScrollHeaderOffset();
+    window.addEventListener("resize", updateScrollHeaderOffset);
+  }
+
   if (scrollHeader && heroSection) {
     const handleHeaderToggle = (entries) => {
       const entry = entries[0];

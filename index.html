@@ -12,17 +12,15 @@
 <body>
 
   <!-- ========== HERO START ========== -->
-  <header class="mvco-hero" id="hero" data-hero-base-width="1600" data-hero-base-height="760">
+  <header class="mvco-hero" id="hero">
     <div class="mvco-hero-stage">
       <div class="mvco-hero-inner">
         <!-- Left: hero gradient block -->
         <div class="mvco-hero-panel">
           <div class="mvco-hero-media">
-          <!-- Optional: drop in a looping MP4 and uncomment
           <video class="mvco-hero-video" autoplay muted loop playsinline>
-            <source src="your-loop-video.mp4" type="video/mp4" />
+            <source src="assets/video/hero.mp4" type="video/mp4" />
           </video>
-          -->
         </div>
         <div class="mvco-hero-logo">
           MV & Co.
@@ -33,7 +31,7 @@
       <div class="mvco-hero-copy">
         <!--<p class="mvco-hero-kicker">Digital Solutions for Luxury & Heritage brands</p>-->
         <h1 class="mvco-hero-title" data-mobile-text="We build and operate digital solutions for fast-growing luxury &amp; heritage brands.">
-          Digital Solutions for Luxury & Heritage brands
+          Digital Solutions for<br>Luxury &amp; Heritage Brands
         </h1>
         <!-- <p class="mvco-hero-subtitle">
           Replace this with your own short positioning statement. Keep it to one
@@ -88,7 +86,7 @@
   <!-- ========== CLIENTS START ========== -->
   <section id="clients" class="section">
     <div class="section-inner">
-      <p class="client-intro">Trusted by timeless brands…</p>
+      <p class="client-intro">Trusted by a growing collection of timeless brands…</p>
       <div class="client-marquee">
         <div class="client-marquee__track" data-logo-source="assets/img/clients/"></div>
       </div>
@@ -128,7 +126,7 @@
           </div>
           <div class="service-info">
             <div class="service-info-top">
-              <h3><em class="service-italic">Fast</em>, Slack-native Delivery</h3>
+              <h3><em class="service-italic">Fast, </em>Slack-native Delivery</h3>
             </div>
             <p class="service-description">
               Luxury brands move on deadlines. We work inside your comms, respond quickly, and keep momentum high — so 
@@ -158,9 +156,12 @@
 
   <section id="services-preview" class="section services-preview">
     <div class="section-inner">
-      <h2 class="services-preview-title">Plug & play across a catalog of <em>scalable digital solutions,</em><br>increase throughput for <em>all marketing stakeholders</em></h2>
+      <h2 class="services-preview-title">Plug & play across a catalog of <em>scalable digital solutions,</em><br>increase throughput for <em>all marketing stakeholders.</em></h2>
       <div class="services-preview-media">
-        <img src="assets/img/services-preview.png" alt="MVCO services overview" />
+        <picture>
+          <source media="(max-width: 640px)" srcset="assets/img/services-preview-mobile.png" />
+          <img src="assets/img/services-preview.png" alt="MVCO services overview" />
+        </picture>
       </div>
     </div>
   </section>
@@ -171,12 +172,13 @@
       <h2 class="trusted-heading heading-white">Where brand standards meet <em>measurable growth.</em></h2>
 
       <div class="case-tiles-grid">
-        <article class="case-tile case-tile--image" style="background-image: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80');">        
+        <article class="case-tile case-tile--image" style="background-image: url('assets/img/case-studies/case-study-1.jpeg');">        
         </article>
         <article class="case-tile case-tile--text case-tile--one">
           <div class="case-tile__content">
             <h3>The CULTURE of the high-end</h3>
             <p>We orchestrate senior creative operations for heritage houses, translating a founder’s taste into scalable systems.</p>
+            <button class="case-tile__toggle" type="button" aria-expanded="false">Read more</button>
           </div>
           <div class="case-tile__overlay">
             <div>
@@ -191,12 +193,13 @@
             </div>
           </div>
         </article>
-        <article class="case-tile case-tile--image" style="background-image: url('https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=900&q=80');">
+        <article class="case-tile case-tile--image" style="background-image: url('assets/img/case-studies/case-study-2.jpeg');">
         </article>
         <article class="case-tile case-tile--text case-tile--two">
           <div class="case-tile__content">
             <h3>The strength of the OFFER</h3>
             <p>Launch marketing playbooks that keep product, trade and paid channels in sync across markets.</p>
+            <button class="case-tile__toggle" type="button" aria-expanded="false">Read more</button>
           </div>
           <div class="case-tile__overlay">
             <div>
@@ -211,12 +214,13 @@
             </div>
           </div>
         </article>
-        <article class="case-tile case-tile--image" style="background-image: url('https://images.unsplash.com/photo-1451976426598-a7593bd6d0b2?auto=format&fit=crop&w=900&q=80');">
+        <article class="case-tile case-tile--image" style="background-image: url('assets/img/case-studies/case-study-3.jpeg');">
         </article>
         <article class="case-tile case-tile--text case-tile--three">
           <div class="case-tile__content">
             <h3>The RETAIL excellence and performance</h3>
             <p>Bridge store teams and digital squads so high-consideration journeys feel personal everywhere.</p>
+            <button class="case-tile__toggle" type="button" aria-expanded="false">Read more</button>
           </div>
           <div class="case-tile__overlay">
             <div>
@@ -234,14 +238,74 @@
       </div>
     </div>
   </section>
-  <!-- ========== FOOTER START ========== -->
-  <footer>
-    <div class="footer-inner">
-      <span>© <span id="year"></span> MVCO Agency. All rights reserved.</span>
-      <span><a href="#hero">Back to top</a></span>
+  <!-- ========== CONTACT START ========== -->
+  <section id="contact" class="section contact-section">
+    <div class="section-inner contact-inner">
+      <div class="contact-content">
+        <p class="contact-kicker">Enquire</p>
+        <h2>Talk with the founders.</h2>
+        <p class="contact-lede">
+          Tell us where you want to take your brand and we will outline the clearest
+          path to get there. Expect a fast response and an honest view on what it
+          takes to scale without losing brand standards.
+        </p>
+        <div class="contact-details">
+          <div class="contact-detail">
+            <span class="contact-label">Email</span>
+            <a href="mailto:hello@mvco.agency">hello@mvco.agency</a>
+          </div>
+          <div class="contact-detail">
+            <span class="contact-label">Phone</span>
+            <span>+44 203 576 5779</span>
+          </div>
+        </div>
+        <p class="contact-legal">© <span id="year"></span> MVCO Agency. All rights reserved.</p>
+      </div>
+      <div class="founder-grid">
+        <figure class="founder-card">
+          <div
+            class="founder-photo"
+            role="img"
+            aria-label="Headshot of the founder"
+            style="--founder-photo: url('../img/founders/founder-1.jpg');"
+          ></div>
+          <figcaption>
+            <span class="founder-name">Will McStay</span>
+            <span class="founder-title">Performance & Growth</span>
+            <div class="founder-links">
+              <a href="tel:+442035765779" aria-label="Call Will McStay">
+                <img class="founder-icon" src="assets/img/icons/phone.svg" alt="" />
+              </a>
+              <a href="https://www.linkedin.com/in/willmcstay/" aria-label="Will McStay on LinkedIn">
+                <img class="founder-icon" src="assets/img/icons/linkedin.svg" alt="" />
+              </a>
+            </div>
+          </figcaption>
+        </figure>
+        <figure class="founder-card">
+          <div
+            class="founder-photo"
+            role="img"
+            aria-label="Headshot of the co-founder"
+            style="--founder-photo: url('../img/founders/founder-2.jpg');"
+          ></div>
+          <figcaption>
+            <span class="founder-name">Oliver Varcoe</span>
+            <span class="founder-title">Design & Development</span>
+            <div class="founder-links">
+              <a href="tel:+442035765779" aria-label="Call Oliver Varcoe">
+                <img class="founder-icon" src="assets/img/icons/phone.svg" alt="" />
+              </a>
+              <a href="https://www.linkedin.com/in/oliver-varcoe/" aria-label="Oliver Varcoe on LinkedIn">
+                <img class="founder-icon" src="assets/img/icons/linkedin.svg" alt="" />
+              </a>
+            </div>
+          </figcaption>
+        </figure>
+      </div>
     </div>
-  </footer>
-  <!-- ========== FOOTER END ========== -->
+  </section>
+  <!-- ========== CONTACT END ========== -->
 
   <!-- Main script -->
   <script src="assets/js/main.js"></script>
