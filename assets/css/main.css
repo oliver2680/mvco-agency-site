@@ -1411,7 +1411,6 @@ padding: 0;
   width: 95%;
   max-width: 1200px;
   border-radius: 1.25rem;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 900px) {
