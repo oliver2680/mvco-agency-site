@@ -2,6 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+
+  <!-- Google tag (gtag.js) -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    // Consent Mode v2 — nothing is stored until the visitor opts in.
+    gtag('consent', 'default', {
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      analytics_storage: 'denied',
+      wait_for_update: 500
+    });
+
+    // Re-apply a previously granted choice before the tag initialises.
+    try {
+      if (localStorage.getItem('mvco-consent') === 'granted') {
+        gtag('consent', 'update', { analytics_storage: 'granted' });
+      }
+    } catch (e) {}
+
+    gtag('js', new Date());
+    gtag('config', 'G-L4WRHFTSZV');
+  </script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L4WRHFTSZV"></script>
+
   <title>MVCO Agency</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <!-- Main stylesheet -->
@@ -299,6 +326,22 @@
     </div>
   </section>
   <!-- ========== CONTACT END ========== -->
+
+  <!-- ========== COOKIE CONSENT START ========== -->
+  <div class="cookie-banner" id="cookieBanner" role="dialog" aria-live="polite"
+       aria-label="Cookie consent" hidden>
+    <div class="cookie-banner__inner">
+      <p class="cookie-banner__copy">
+        We use analytics cookies to understand how the site is used. They are only
+        set if you accept.
+      </p>
+      <div class="cookie-banner__actions">
+        <button class="cookie-banner__btn cookie-banner__btn--ghost" type="button" data-consent="denied">Decline</button>
+        <button class="cookie-banner__btn cookie-banner__btn--solid" type="button" data-consent="granted">Accept</button>
+      </div>
+    </div>
+  </div>
+  <!-- ========== COOKIE CONSENT END ========== -->
 
   <!-- Main script -->
   <script src="assets/js/main.js"></script>

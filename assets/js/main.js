@@ -514,4 +514,101 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+// Cookie consent banner — drives Google Consent Mode v2
+document.addEventListener("DOMContentLoaded", () => {
+  const banner = document.getElementById("cookieBanner");
+  if (!banner) {
+    return;
+  }
+
+  const STORAGE_KEY = "mvco-consent";
+
+  const readChoice = () => {
+    try {
+      return localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const saveChoice = (choice) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, choice);
+    } catch (e) {}
+  };
+
+  const hideBanner = () => {
+    banner.classList.remove("is-visible");
+    window.setTimeout(() => {
+      banner.hidden = true;
+    }, 350);
+  };
+
+  // Already answered — leave the banner out of the way.
+  if (readChoice()) {
+    return;
+  }
+
+  const showBanner = () => {
+    if (!banner.hidden) {
+      return;
+    }
+    banner.hidden = false;
+    // Force a reflow so the transition runs from the off-screen start position.
+    // (A requestAnimationFrame here would never fire in a background tab.)
+    void banner.offsetHeight;
+    banner.classList.add("is-visible");
+  };
+
+  // On mobile the banner sits over the hero title, so hold it back until the
+  // visitor has scrolled away from the top. Desktop shows it straight away.
+  const mobileBannerQuery =
+    typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 640px)")
+      : null;
+  const MOBILE_REVEAL_OFFSET = 40;
+
+  if (!mobileBannerQuery || !mobileBannerQuery.matches) {
+    showBanner();
+  } else if (window.scrollY > MOBILE_REVEAL_OFFSET) {
+    // Restored scroll position — already past the hero.
+    showBanner();
+  } else {
+    const onScroll = () => {
+      if (window.scrollY <= MOBILE_REVEAL_OFFSET) {
+        return;
+      }
+      window.removeEventListener("scroll", onScroll);
+      showBanner();
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Rotating or resizing up to desktop should not keep the banner waiting.
+    const onBreakpointChange = (event) => {
+      if (!event.matches) {
+        window.removeEventListener("scroll", onScroll);
+        showBanner();
+      }
+    };
+    if (typeof mobileBannerQuery.addEventListener === "function") {
+      mobileBannerQuery.addEventListener("change", onBreakpointChange);
+    } else if (typeof mobileBannerQuery.addListener === "function") {
+      mobileBannerQuery.addListener(onBreakpointChange);
+    }
+  }
+
+  banner.querySelectorAll("[data-consent]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const choice = button.dataset.consent;
+      saveChoice(choice);
+
+      if (typeof window.gtag === "function") {
+        window.gtag("consent", "update", { analytics_storage: choice });
+      }
+
+      hideBanner();
+    });
+  });
+});
+
 // Place for future JS (animations, tracking, etc.)
