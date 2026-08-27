@@ -184,7 +184,9 @@ document.addEventListener("DOMContentLoaded", () => {
       { file: "1.svg", alt: "Watches of Switzerland", index: 0 },
       { file: "2.svg", alt: "Toast", index: 1 },
       { file: "3.svg", alt: "Elizabeth Gage", index: 2 },
-      { file: "4.svg", alt: "Finlay", index: 3 },
+      // Finlay lives on at 4.svg if it ever needs to come back:
+      // { file: "4.svg", alt: "Finlay", index: 3 },
+      { file: "pjm.svg", alt: "PJM", index: 3 },
       { file: "5.svg", alt: "Drakes", index: 4 },
       { file: "6.svg", alt: "Dundas", index: 5 },
     ];
@@ -222,6 +224,13 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     };
 
+    const removeLastLogo = () => {
+      const last = marqueeTrack.lastElementChild;
+      if (!last) return;
+      marqueeTrack.removeChild(last);
+      nextLogoIndex = (nextLogoIndex - 1 + logos.length) % logos.length;
+    };
+
     const initTrack = () => {
       marqueeTrack.innerHTML = "";
       nextLogoIndex = 0;
@@ -232,115 +241,116 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     initTrack();
 
-    const BASE_SPEED = 50; // pixels per second
-    const MIN_SPEED = 30;
-    const MAX_SPEED = 60;
-    const CHANGE_PER_SCROLL = 10;
-    const SMOOTHING = 0.5;
+    const AUTO_VELOCITY = -30; // pixels per second, always drifting left
+    const SETTLE_RATE = 2.5; // how quickly a fling eases back to the drift
+    const DRAG_THRESHOLD = 4; // pixels before a press counts as a drag
 
-    let currentSpeed = BASE_SPEED;
-    let targetSpeed = BASE_SPEED;
+    const marqueeViewport = marqueeTrack.parentElement;
     let offset = 0;
+    let velocity = AUTO_VELOCITY;
     let lastTime = null;
-    let direction = -1; // -1 = left to right visually (track moves left)
+
+    let isDragging = false;
+    let pointerId = null;
+    let dragStartX = 0;
+    let lastPointerX = 0;
+    let lastPointerTime = 0;
+    let hasMoved = false;
+
+    // Recycle logos at either edge so the track is endless in both directions.
+    const recycleLogos = () => {
+      let firstLogo = marqueeTrack.firstElementChild;
+      while (firstLogo) {
+        const logoWidth = firstLogo.getBoundingClientRect().width;
+        if (!logoWidth || -offset < logoWidth) break;
+        offset += logoWidth;
+        marqueeTrack.removeChild(firstLogo);
+        appendNextLogo();
+        firstLogo = marqueeTrack.firstElementChild;
+      }
+
+      while (offset > 0 && marqueeTrack.lastElementChild) {
+        removeLastLogo();
+        prependPrevLogo();
+        const logoWidth =
+          marqueeTrack.firstElementChild.getBoundingClientRect().width;
+        if (!logoWidth) break;
+        offset -= logoWidth;
+      }
+    };
 
     const stepMarquee = (timestamp) => {
       if (lastTime === null) lastTime = timestamp;
-      const delta = (timestamp - lastTime) / 1000;
+      const delta = Math.min((timestamp - lastTime) / 1000, 0.05);
       lastTime = timestamp;
 
-      currentSpeed += (targetSpeed - currentSpeed) * SMOOTHING;
-      offset += direction * currentSpeed * delta;
-
-      let firstLogo = marqueeTrack.firstElementChild;
-      if (direction === -1) {
-        while (firstLogo) {
-          const logoWidth = firstLogo.getBoundingClientRect().width;
-          if (!logoWidth) break;
-          if (-offset >= logoWidth) {
-            offset += logoWidth;
-            marqueeTrack.removeChild(firstLogo);
-            appendNextLogo();
-            firstLogo = marqueeTrack.firstElementChild;
-          } else {
-            break;
-          }
-        }
-      } else {
-        while (offset >= 0) {
-          const lastLogo = marqueeTrack.lastElementChild;
-          if (!lastLogo) break;
-          const logoWidth = lastLogo.getBoundingClientRect().width;
-          if (!logoWidth) break;
-          offset -= logoWidth;
-          marqueeTrack.removeChild(lastLogo);
-          prependPrevLogo();
-        }
+      if (!isDragging) {
+        // Ease whatever velocity a fling left behind back to the slow drift.
+        velocity +=
+          (AUTO_VELOCITY - velocity) * Math.min(1, delta * SETTLE_RATE);
+        offset += velocity * delta;
       }
 
+      recycleLogos();
       marqueeTrack.style.transform = `translateX(${offset}px)`;
       requestAnimationFrame(stepMarquee);
     };
     requestAnimationFrame(stepMarquee);
 
-    const handleWheel = (event) => {
-      const delta = event.deltaY || event.wheelDelta || event.detail || 0;
-      if (delta > 0) {
-        direction = -1;
-        targetSpeed = Math.min(MAX_SPEED, targetSpeed + CHANGE_PER_SCROLL);
-      } else if (delta < 0) {
-        direction = 1;
-        targetSpeed = Math.max(MIN_SPEED, targetSpeed - CHANGE_PER_SCROLL);
-      }
+    const onPointerDown = (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      isDragging = true;
+      hasMoved = false;
+      pointerId = event.pointerId;
+      dragStartX = event.clientX;
+      lastPointerX = event.clientX;
+      lastPointerTime = event.timeStamp;
+      velocity = 0;
+      marqueeViewport.classList.add("is-dragging");
     };
 
-    window.addEventListener("wheel", handleWheel, { passive: true });
-  }
+    const onPointerMove = (event) => {
+      if (!isDragging || event.pointerId !== pointerId) return;
+      const dx = event.clientX - lastPointerX;
+      const dt = (event.timeStamp - lastPointerTime) / 1000;
 
-  const caseTileButtons = document.querySelectorAll(".case-tile__toggle");
-  const caseTileQuery =
-    typeof window.matchMedia === "function"
-      ? window.matchMedia("(max-width: 1024px)")
-      : null;
-
-  const resetCaseTiles = () => {
-    if (!caseTileQuery || caseTileQuery.matches) {
-      return;
-    }
-    caseTileButtons.forEach((button) => {
-      const tile = button.closest(".case-tile--text");
-      if (tile) {
-        tile.classList.remove("case-tile--open");
+      if (!hasMoved && Math.abs(event.clientX - dragStartX) > DRAG_THRESHOLD) {
+        hasMoved = true;
+        marqueeViewport.setPointerCapture(pointerId);
       }
-      button.setAttribute("aria-expanded", "false");
-    });
-  };
+      if (!hasMoved) return;
 
-  if (caseTileButtons.length && caseTileQuery) {
-    caseTileButtons.forEach((button) => {
-      button.setAttribute("aria-expanded", "false");
-      button.addEventListener("click", () => {
-        if (!caseTileQuery.matches) {
-          return;
-        }
-        const tile = button.closest(".case-tile--text");
-        if (!tile) {
-          return;
-        }
-        tile.classList.add("case-tile--open");
-        button.setAttribute("aria-expanded", "true");
-        button.disabled = true;
-      });
-    });
+      offset += dx;
+      if (dt > 0) {
+        // Blend samples so a jittery last frame doesn't define the fling.
+        velocity = velocity * 0.7 + (dx / dt) * 0.3;
+      }
+      lastPointerX = event.clientX;
+      lastPointerTime = event.timeStamp;
+    };
 
-    if (typeof caseTileQuery.addEventListener === "function") {
-      caseTileQuery.addEventListener("change", resetCaseTiles);
-    } else if (typeof caseTileQuery.addListener === "function") {
-      caseTileQuery.addListener(resetCaseTiles);
-    }
+    const endDrag = (event) => {
+      if (!isDragging || (event && event.pointerId !== pointerId)) return;
+      isDragging = false;
+      if (pointerId !== null && marqueeViewport.hasPointerCapture?.(pointerId)) {
+        marqueeViewport.releasePointerCapture(pointerId);
+      }
+      pointerId = null;
+      marqueeViewport.classList.remove("is-dragging");
+    };
+
+    marqueeViewport.addEventListener("pointerdown", onPointerDown);
+    marqueeViewport.addEventListener("pointermove", onPointerMove);
+    marqueeViewport.addEventListener("pointerup", endDrag);
+    marqueeViewport.addEventListener("pointercancel", endDrag);
+    // Fallback for a press that leaves the marquee before capture kicks in.
+    window.addEventListener("pointerup", endDrag);
+    window.addEventListener("pointercancel", endDrag);
+    marqueeViewport.addEventListener("dragstart", (event) =>
+      event.preventDefault()
+    );
   }
 
-  const caseStudiesSection = document.getElementById("case-studies");
   const scrollHeader = document.getElementById("scrollHeader");
   const updateScrollHeaderOffset = () => {
     if (!scrollHeader) {
@@ -377,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const problemSection = document.getElementById("problem-framing");
 
-  if (scrollHeader && (servicesSection || problemSection || caseStudiesSection)) {
+  if (scrollHeader && (servicesSection || problemSection)) {
     const lerp = (start, end, amount) => start + (end - start) * amount;
     const mixColor = (from, to, amount) => ({
       r: lerp(from.r, to.r, amount),
@@ -495,9 +505,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const updateHeaderTheme = () => {
       const problemRatio = progressThroughSection(problemSection);
-      const servicesRatio = progressThroughSection(servicesSection);
-      const caseRatio = progressThroughSection(caseStudiesSection);
-      const darkRatio = Math.max(servicesRatio, caseRatio);
+      const darkRatio = progressThroughSection(servicesSection);
 
       if (darkRatio > 0) {
         applyTheme(servicesTheme, servicesTheme, darkRatio);

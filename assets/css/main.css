@@ -58,9 +58,6 @@ body.hero-lock {
 
 :root {
   --service-info-bg: #14271f;
-  --case-tile-bg-1: #1A5342;
-  --case-tile-bg-2: #1B3B53;
-  --case-tile-bg-3: #53441B;
 }
 
 /* ============ Typography Scale ============ */
@@ -184,24 +181,6 @@ a {
 
 #services .section-intro {
   color: rgba(253, 250, 246, 0.85);
-}
-
-#case-studies.section {
-  background: rgb(20, 39, 31);
-  padding-left: 0;
-  padding-right: 0;
-  padding-bottom: 0;
-}
-
-#case-studies .section-inner {
-  background: rgb(20, 39, 31);
-  max-width: none;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-#case-studies .section-intro {
-  color: rgba(253, 250, 246, 0.8);
 }
 
 .problem-framing .section-inner {
@@ -461,6 +440,9 @@ p.section-intro {
   --hero-base-height: 760;
   --hero-panel-width: 640;
   --hero-panel-scale-x: 1;
+  /* How long the panel holds at full width before it shrinks.
+     The copy and logo delays are offset from this so the sequence stays in step. */
+  --hero-intro-hold: 0.8s;
   height: 100vh;
   min-height: 100vh;
   padding: 0;
@@ -635,12 +617,21 @@ p.section-intro {
   margin-top: 0.5rem;
 }
 
+/* Registered so it can be animated as a number: the panel derives both its
+   transform and its counter-scaled radius from this single live value, which
+   keeps the two exactly in step frame for frame. */
+@property --hero-panel-scale-live {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 1;
+}
+
 @keyframes mvco-hero-panel-intro {
   0% {
-    transform: scaleX(var(--hero-panel-scale-x));
+    --hero-panel-scale-live: var(--hero-panel-scale-x);
   }
   100% {
-    transform: scaleX(1);
+    --hero-panel-scale-live: 1;
   }
 }
 
@@ -669,19 +660,26 @@ p.section-intro {
 @media (min-width: 901px) {
   .mvco-hero.hero-animating .mvco-hero-panel {
     transform-origin: left center;
+    transform: scaleX(var(--hero-panel-scale-live));
+    /* scaleX stretches the horizontal radius by the same factor, so divide it
+       back out: 9px / scale renders as a true 9px. The vertical radius is
+       untouched by a horizontal scale, so it stays at a literal 9px. */
+    border-radius: calc(9px / var(--hero-panel-scale-live)) / 9px;
+    /* `both` keeps the full-width 0% frame on screen through the hold;
+       with `forwards` the panel would sit small and then jump out. */
     animation: mvco-hero-panel-intro 1.35s cubic-bezier(0.22, 0.61, 0.36, 1)
-      forwards;
+      var(--hero-intro-hold) both;
   }
 
   .mvco-hero.hero-animating .mvco-hero-copy {
     animation: mvco-hero-copy-intro 2.35s cubic-bezier(0.22, 0.61, 0.36, 1)
-      0.7s both;
+      calc(var(--hero-intro-hold) + 0.7s) both;
   }
 
   .mvco-hero.hero-animating .mvco-hero-logo {
     opacity: 0;
     animation: mvco-hero-logo-rise 1.4s linear
-      1.1s forwards;
+      calc(var(--hero-intro-hold) + 1.1s) forwards;
   }
 }
 
@@ -717,166 +715,6 @@ p.section-intro {
 
 .btn-secondary:hover {
   background: rgba(203, 191, 178, 0.16);
-}
-
-/* ============ 2. Case Studies ============ */
-
-.case-tiles-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(2, 460px);
-  background: rgb(20, 39, 31);
-}
-
-.case-tile {
-  position: relative;
-  overflow: hidden;
-  background: #fdfaf6;
-  min-height: 320px;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-}
-
-.case-tile--image {
-  background-size: cover;
-  background-position: center;
-}
-
-.case-tile--text {
-  background: var(--case-tile-bg, rgba(247, 244, 240, 0.98));
-  --case-tile-text: color-mix(in srgb, var(--case-tile-bg, rgba(247, 244, 240, 0.98)) 5%, white 95%);
-  color: var(--case-tile-text);
-  padding: clamp(1.5rem, 3vw, 2.8rem);
-  display: flex;
-  flex-direction: column;
-  justify-content:center;
-}
-
-.case-tile--one {
-  --case-tile-bg: var(--case-tile-bg-1);
-}
-
-.case-tile--two {
-  --case-tile-bg: var(--case-tile-bg-2);
-}
-
-.case-tile--three {
-  --case-tile-bg: var(--case-tile-bg-3);
-}
-
-.case-tile__content h3 {
-  font-family: "Funnel Display", serif;
-  font-size: 2rem;
-  color: inherit;
-  margin-bottom: 3rem;
-  line-height: 2rem;
-}
-
-.case-tile__content p {
-  margin: 0;
-  line-height: 1.4;
-  color: color-mix(in srgb, var(--case-tile-text) 85%, rgba(0, 0, 0, 0.25));
-}
-
-.case-tile__toggle {
-  display: none;
-  margin-top: 1.5rem;
-  border-radius: 999px;
-  padding: 0.45rem 1.2rem;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border: 1px solid currentColor;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-}
-
-.case-tile__overlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  padding: clamp(1.5rem, 3vw, 3rem);
-  background: #002c40;
-  color: #f0fbff;
-  transition: transform 1.5s ease;
-  transform: translateY(100%);
-  opacity: 0;
-  display: flex;
-  align-items: center;
-}
-
-.case-tile__overlay h4,
-.case-tile__overlay h5 {
-  font-family: "Funnel Display", serif;
-  margin-bottom: 0.5rem;
-}
-
-.case-tile__overlay h4 {
-  font-size: 1.3rem;
-}
-
-.case-tile__overlay h5 {
-  margin-top: 3rem;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-}
-
-.case-tile__overlay ul {
-  padding-left: 1rem;
-  margin: 0.5rem 0 0;
-  line-height: 1.4;
-  list-style: disc;
-}
-
-.case-tile--text:hover .case-tile__overlay {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-@media (max-width: 1024px) {
-  .case-tile__toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .case-tile__overlay {
-    pointer-events: none;
-  }
-
-  .case-tile--text:hover .case-tile__overlay {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-
-  .case-tile--open .case-tile__overlay {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .case-tile--open.case-tile--text:hover .case-tile__overlay {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .case-tile--open .case-tile__toggle {
-    display: none;
-  }
-}
-
-@media (max-width: 960px) {
-  .case-tiles-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: none;
-  }
 }
 
 /* ============ 3. Services (accordions) ============ */
@@ -944,6 +782,14 @@ p.section-intro {
 .client-marquee {
   overflow: hidden;
   width: 100%;
+  cursor: grab;
+  touch-action: pan-y; /* keep vertical page scroll, take horizontal drags */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.client-marquee.is-dragging {
+  cursor: grabbing;
 }
 
 .client-intro {
@@ -1032,6 +878,13 @@ p.section-intro {
   width: auto;
   object-fit: contain;
   filter: grayscale(0.05);
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+/* PJM's lockup sits taller than the rest, so scale it back to match. */
+.logo-item img[src$="pjm.svg"] {
+  height: 85px;
 }
 
 @media (max-width: 640px) {
@@ -1357,10 +1210,6 @@ p.section-intro {
 
   .contact-details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .case-studies-grid {
-    grid-template-columns: 1fr;
   }
 }
 
