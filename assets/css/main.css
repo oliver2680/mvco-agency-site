@@ -498,6 +498,22 @@ p.section-intro {
   to   { transform: translate(-50%, -50%) rotate(-360deg); }
 }
 
+/* Registering the angle makes it animatable. Used by the framework column
+   headers, which sweep the gradient in place rather than rotating the box. */
+@property --pastel-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes pastel-sweep {
+  to { --pastel-angle: 360deg; }
+}
+
+@keyframes pastel-sweep-reverse {
+  to { --pastel-angle: -360deg; }
+}
+
 .pastel-bg-layer {
   position: absolute;
   top: 50%;
@@ -1227,9 +1243,9 @@ padding: 0;
   border-radius: 1.25rem;
   overflow: hidden;
   position: relative;
-  /* Sized to the longest problem block (~217px) plus breathing room plus the
-     195px peek. Retune alongside --peek if the problem copy grows. */
-  height: 480px;
+  /* Sized to the longest problem block (~190px) plus breathing room plus the
+     207px peek. Retune alongside --peek if the problem copy grows. */
+  height: 455px;
   color: #fdfaf6;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
   transition: transform 0.35s ease, box-shadow 0.35s ease;
@@ -1243,11 +1259,12 @@ padding: 0;
 .service-problem {
   width: 100%;
   height: 100%;
-  padding: 2.25rem 1.75rem;
+  padding: 2rem 1.75rem;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 1.5rem;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
   opacity: 1;
   transition: opacity 0.35s ease;
 }
@@ -1268,7 +1285,7 @@ padding: 0;
 
 .service-problem-text {
   font-family: "Funnel Display", serif;
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 300;
   line-height: 1.45;
   margin: 0;
@@ -1286,9 +1303,10 @@ padding: 0;
      description runs — otherwise the h3s sit at different heights.
      Sized to clear the h3 plus ~1.5 lines of description, so a faded sliver of
      copy is cut off by the card edge and signals there's more on hover. */
-  --peek: 195px;
+  --peek: 207px;
   background: var(--service-info-bg, #14271f);
-  padding: 1.75rem;
+  /* Extra top padding clears the badge, whose lower half is 38.5px. */
+  padding: 2.5rem 1.75rem 1.75rem;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -1301,13 +1319,15 @@ padding: 0;
   transition: transform 0.35s ease;
 }
 
-/* Floated rather than absolutely positioned so the h3 wraps around it, instead
-   of reserving a dead column on every line. */
+/* Straddles the panel's top edge, centred on the seam between the problem area
+   and the answer. Positioned against .service-info, which is already absolute. */
 .service-info-badge {
-  float: right;
-  width: 44px;
-  height: 44px;
-  margin: 0.25rem 0 0.5rem 0.9rem;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 77px;
+  height: 77px;
   border-radius: 50%;
   background: #fdfaf6;
   display: flex;
@@ -1398,7 +1418,9 @@ padding: 0;
 
   .service-problem {
     height: auto;
-    padding: 1.75rem 1.5rem;
+    /* Card is auto-height here, so there's no desktop-style gap above the panel.
+       The bottom padding reserves room for the badge's 38.5px upper half. */
+    padding: 1.75rem 1.5rem 3.5rem;
     gap: 1rem;
     transition: none;
   }
@@ -1487,13 +1509,97 @@ padding: 0;
 }
 
 .framework-column-header {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 0.85rem;
   color: #f7f4f0;
-  background: rgb(20, 39, 31);
+  /* Same treatment as .mvco-hero-panel: this base gradient sits under the two
+     counter-rotating conic layers plus the radial vignette. */
+  background: linear-gradient(135deg, #d9b8a8, #9fb5c4);
   border-radius: 1rem;
   padding: 1.1rem 1.25rem;
+}
+
+/* --- Shared gradient plane --------------------------------------------------
+   Each header clips its own copy of a background sized to the WHOLE row, then
+   shifts it left by its column position. The three headers therefore act as
+   windows onto one continuous gradient rather than each replaying it. */
+.framework-header-media {
+  --fw-gap: 1.5rem;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: calc(300% + 2 * var(--fw-gap));
+  background: linear-gradient(135deg, #d9b8a8, #9fb5c4);
+  /* Darkens the whole plane — base, conic layers and vignette — to lift contrast
+     with the #f7f4f0 text. Scales RGB, so hue and saturation survive where a grey
+     scrim would flatten them. Lower to darken further. */
+  filter: brightness(0.72);
+  pointer-events: none;
+}
+
+.framework-column:nth-child(1) .framework-header-media {
+  left: 0;
+}
+
+.framework-column:nth-child(2) .framework-header-media {
+  left: calc(-100% - var(--fw-gap));
+}
+
+.framework-column:nth-child(3) .framework-header-media {
+  left: calc(-200% - (2 * var(--fw-gap)));
+}
+
+/* The hero rotates an oversized square box. That can't work on a plane this wide
+   and short — at 90deg it would swing out of frame and the headers would flash.
+   Animate the gradient's own angle instead, so the layer can sit exactly on the
+   plane. Blur is scaled down too: 50px would wash a ~70px strip to flat colour. */
+.framework-header-media .pastel-bg-layer {
+  --pastel-angle: 0deg;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  animation: none;
+  filter: blur(16px);
+  background: conic-gradient(
+    from var(--pastel-angle),
+    #7a9684,
+    #8a9c6e,
+    #b8a070,
+    #d4c098,
+    #6f8a9e,
+    #7a94aa,
+    #8a9c6e,
+    #7a9684
+  );
+}
+
+.framework-header-media .pastel-bg-layer-1 {
+  animation: pastel-sweep 8s linear infinite;
+}
+
+.framework-header-media .pastel-bg-layer-2 {
+  animation: pastel-sweep-reverse 10s linear infinite;
+}
+
+/* Phase-shift each column so the motion differs too, not just the slice. This is
+   the only source of variation once the row collapses to a single column. */
+.framework-column:nth-child(2) .framework-header-media .pastel-bg-layer {
+  animation-delay: -2.6s;
+}
+
+.framework-column:nth-child(3) .framework-header-media .pastel-bg-layer {
+  animation-delay: -5.3s;
+}
+
+.framework-column-header > .framework-icon-tile,
+.framework-column-header > h3 {
+  position: relative;
+  z-index: 1;
 }
 
 .framework-column-header h3 {
@@ -1562,6 +1668,15 @@ padding: 0;
     gap: 2.5rem;
     max-width: 720px;
     margin: 0 auto;
+  }
+
+  /* Single column here, so there's no row to span — each header gets the whole
+     plane. The staggered animation-delay still keeps the three from matching. */
+  .framework-column:nth-child(1) .framework-header-media,
+  .framework-column:nth-child(2) .framework-header-media,
+  .framework-column:nth-child(3) .framework-header-media {
+    width: 100%;
+    left: 0;
   }
 }
 
