@@ -1346,7 +1346,8 @@ padding: 0;
   font-size: 2rem;
   font-weight: 400;
   margin-bottom: 0.6rem;
-  color: #e6f0d4;
+  /* Matches the badge disc above it. */
+  color: #fdfaf6;
 }
 
 .service-info h3 em.service-italic {
@@ -1366,7 +1367,7 @@ padding: 0;
 .service-description {
   font-family: "Funnel Display", serif;
   margin: 0;
-  color: rgba(253, 250, 246, 0.92);
+  color: #fdfaf6;
   line-height: 1.45;
   /* Not 0 — the sliver inside the peek strip has to be faintly readable to work
      as an affordance. Goes to 1 on hover. */

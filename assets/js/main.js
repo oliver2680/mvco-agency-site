@@ -107,11 +107,78 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let pending = 0;
     let introResolved = false;
+
+    /* Impatience handling. While the intro holds the page, a visitor trying to
+       scroll gets no feedback at all, which reads as jank. Rather than cutting
+       the sequence off, speed it up — and speed it up further each time they
+       insist, so pushing harder genuinely gets them there sooner.
+       playbackRate scales the animation delays too, so the whole staggered
+       sequence compresses while keeping its choreography. */
+    const SCROLL_KEYS = new Set([
+      " ",
+      "PageDown",
+      "PageUp",
+      "ArrowDown",
+      "ArrowUp",
+      "Home",
+      "End",
+    ]);
+    const IMPATIENCE_EVENTS = ["wheel", "touchmove", "keydown"];
+    const BASE_INTRO_RATE = 1.5;
+    const INTRO_RATE_STEP = 1.2;
+    const MAX_INTRO_RATE = 3;
+    /* One trackpad gesture fires dozens of wheel events. Without this throttle
+       the ramp compounds on every one and a single flick hits the cap instantly,
+       which is what made it feel like it was skipping rather than hurrying. */
+    const INTRO_RAMP_INTERVAL = 180;
+    const canRetime = typeof heroPanel.getAnimations === "function";
+    let introRate = 1;
+    let lastRampAt = 0;
+
+    const onImpatience = (event) => {
+      if (introResolved) {
+        return;
+      }
+      if (event.type === "keydown" && !SCROLL_KEYS.has(event.key)) {
+        return;
+      }
+      /* No Web Animations support: nothing to retime, so don't trap them. */
+      if (!canRetime) {
+        completeIntro();
+        return;
+      }
+      /* The first nudge responds immediately; only the ramp after it is throttled. */
+      const now = Date.now();
+      if (introRate > 1 && now - lastRampAt < INTRO_RAMP_INTERVAL) {
+        return;
+      }
+      lastRampAt = now;
+      introRate = Math.min(
+        MAX_INTRO_RATE,
+        introRate === 1 ? BASE_INTRO_RATE : introRate * INTRO_RATE_STEP
+      );
+      [heroPanel, heroCopy, heroLogo].forEach((element) => {
+        if (!element || typeof element.getAnimations !== "function") {
+          return;
+        }
+        element.getAnimations().forEach((animation) => {
+          animation.playbackRate = introRate;
+        });
+      });
+    };
+
+    const detachImpatience = () => {
+      IMPATIENCE_EVENTS.forEach((type) => {
+        window.removeEventListener(type, onImpatience);
+      });
+    };
+
     const completeIntro = () => {
       if (introResolved) {
         return;
       }
       introResolved = true;
+      detachImpatience();
       heroSection.classList.remove("hero-animating");
       unlockScroll();
       heroIntroComplete = true;
@@ -146,6 +213,12 @@ document.addEventListener("DOMContentLoaded", () => {
       completeIntro();
       return;
     }
+
+    /* Attached only now: the animations have to exist before getAnimations()
+       can return them. */
+    IMPATIENCE_EVENTS.forEach((type) => {
+      window.addEventListener(type, onImpatience, { passive: true });
+    });
 
     window.setTimeout(completeIntro, 4500);
   };
