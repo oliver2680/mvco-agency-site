@@ -1,0 +1,108 @@
+/* Scarce — episode pages. Loaded after scarce.css; reuses its tokens and components. */
+
+/* Hero */
+.ep-hero {
+  max-width: var(--wrap); margin: 0 auto;
+  padding: clamp(3.5rem, 9vw, 6.5rem) 1.5rem clamp(2rem, 5vw, 3rem);
+  text-align: center;
+}
+.ep-hero .kicker { max-width: none; }
+.ep-back { display: inline-block; margin-bottom: 1.6rem; font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink-55); }
+.ep-back:hover { color: var(--ink); }
+.ep-title {
+  font-size: clamp(2.6rem, 7vw, 5.4rem);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  max-width: 16ch; margin: 0.4rem auto 1.2rem;
+}
+.ep-guest { font-family: var(--serif); font-weight: 300; font-size: clamp(1.2rem, 2.2vw, 1.6rem); color: var(--ink-70); margin: 0 auto 1.8rem; }
+
+/* Player */
+.ep-player { max-width: 1040px; margin: 0 auto; padding: 0 1.5rem; }
+.ep-frame { position: relative; aspect-ratio: 16 / 9; background: var(--forest); border: 1px solid var(--ink-12); }
+.ep-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.ep-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem; margin-top: 1.5rem; }
+
+/* Show notes */
+.notes { border-top: 1px solid var(--ink-12); margin-top: clamp(3rem, 7vw, 5rem); }
+.notes .prose p { max-width: 60ch; }
+.notes-sub { margin-top: 2.8rem; }
+.notes-sub h3 { font-size: 0.72rem; font-weight: 400; letter-spacing: 0.3em; text-transform: uppercase; color: var(--ink-55); margin-bottom: 0.9rem; }
+.notes-sub p { color: var(--ink-70); }
+.notes-sub p + p { margin-top: 0.8rem; }
+.notes-links { list-style: none; border-top: 1px solid var(--ink-12); }
+.notes-links li { padding: 0.8rem 0; border-bottom: 1px solid var(--ink-12); color: var(--ink-70); }
+.notes-links a { color: var(--ink); border-bottom: 1px solid var(--ink-12); }
+.notes-links a:hover { border-color: var(--ink); }
+
+/* Chapters */
+.chapters { list-style: none; border-top: 1px solid var(--ink-12); }
+.chapters li { border-bottom: 1px solid var(--ink-12); }
+.chapter-btn {
+  display: grid; grid-template-columns: 4.2rem 1fr; gap: 1rem; align-items: baseline;
+  width: 100%; padding: 0.85rem 0; background: none; border: 0; cursor: pointer; text-align: left;
+  font: 400 1rem/1.4 var(--sans); color: var(--ink);
+}
+.chapter-btn:hover .chapter-name { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--ink-55); }
+.chapter-time { font-variant-numeric: tabular-nums; font-size: 0.82rem; color: var(--ink-55); letter-spacing: 0.04em; }
+
+/* Quotes */
+.quotes { background: var(--forest); color: var(--forest-text); }
+.quotes .kicker { color: rgba(253, 250, 246, 0.55); }
+.quote-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--forest-line); }
+.quote-grid blockquote { padding: 2rem 2rem 0 0; border-right: 1px solid var(--forest-line); }
+.quote-grid blockquote + blockquote { padding-left: 2rem; }
+.quote-grid blockquote:last-child { border-right: none; padding-right: 0; }
+.quote-grid p { font-family: var(--serif); font-weight: 300; font-size: clamp(1.25rem, 2vw, 1.55rem); line-height: 1.3; color: var(--cream-2); }
+
+/* Transcript */
+.transcript { background: var(--cream-2); border-top: 1px solid var(--ink-12); }
+.tx-nav { list-style: none; margin-top: 1.8rem; border-top: 1px solid var(--ink-12); }
+.tx-nav a { display: block; padding: 0.45rem 0 0.45rem 0.9rem; font-size: 0.88rem; color: var(--ink-55); border-left: 2px solid transparent; transition: color 0.2s ease, border-color 0.2s ease; }
+.tx-nav a:hover { color: var(--ink); }
+.tx-nav a.is-active { color: var(--ink); border-left-color: var(--forest); }
+.transcript .sticky { max-height: calc(100vh - 7rem); overflow-y: auto; scrollbar-width: none; }
+.transcript .sticky::-webkit-scrollbar { display: none; }
+
+.tx-body { max-width: 680px; }
+.tx-chapter { scroll-margin-top: 5.5rem; padding-bottom: 2.4rem; }
+.tx-chapter + .tx-chapter { padding-top: 2.4rem; border-top: 1px solid var(--ink-12); }
+.tx-chapter h3 {
+  display: flex; align-items: baseline; gap: 0.9rem;
+  font-family: var(--serif); font-weight: 300; font-size: clamp(1.35rem, 2.2vw, 1.7rem); line-height: 1.2;
+  margin-bottom: 1.4rem;
+}
+.ts {
+  flex: none; background: none; border: 1px solid var(--ink-12); border-radius: 999px; cursor: pointer;
+  padding: 0.2rem 0.6rem; font: 400 0.72rem/1.2 var(--sans); letter-spacing: 0.06em; color: var(--ink-55);
+  font-variant-numeric: tabular-nums; transform: translateY(-0.2em);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.ts:hover { border-color: var(--ink); color: var(--ink); }
+.turn { display: grid; grid-template-columns: 5.5rem 1fr; gap: 1rem; }
+.turn + .turn { margin-top: 1.3rem; }
+.spk { font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-55); padding-top: 0.35rem; }
+.turn p { font-size: 1.06rem; line-height: 1.7; }
+.turn p + p { margin-top: 0.9rem; }
+.turn.host p { color: var(--ink-70); font-style: italic; }
+.tx-end { margin-top: 1rem; font-size: 0.85rem; color: var(--ink-55); }
+
+/* Guest CTA band */
+.ep-cta { text-align: center; }
+.ep-cta h2 { margin: 0 auto 1.4rem; }
+.ep-cta .lede { margin: 0 auto 1.8rem; }
+
+@media (max-width: 860px) {
+  .quote-grid { grid-template-columns: 1fr; }
+  .quote-grid blockquote { padding: 1.6rem 0; border-right: none; border-bottom: 1px solid var(--forest-line); }
+  .quote-grid blockquote + blockquote { padding-left: 0; }
+  .quote-grid blockquote:last-child { border-bottom: none; }
+  .tx-nav { display: none; }
+  .transcript .sticky { max-height: none; overflow: visible; }
+}
+@media (max-width: 560px) {
+  .turn { grid-template-columns: 1fr; gap: 0.3rem; }
+  .spk { padding-top: 0; }
+  .tx-chapter h3 { flex-direction: column; gap: 0.6rem; }
+  .ts { transform: none; }
+}
