@@ -580,9 +580,12 @@ more.addEventListener('click', () => {
 render();
 
 const wm = document.getElementById('wm');
-// "Join the study" card: opened only from the bubble in the bottom corner (dimming the page on mobile).
-// The bubble sits in the corner logo's place at the top of the page and moves up above the logo once it appears.
-const cta = document.getElementById('cta');
+// "Join the study" card: opens by itself once per page view when the reader is 10% of the way down the page
+// or reaches Finding 1, whichever comes first (the abstract runs long on mobile), and from the
+// bubble in the bottom corner at any time (dimming the page on mobile). The bubble sits in the corner logo's
+// place at the top of the page and moves up above the logo once it appears.
+const cta = document.getElementById('cta'), trigger = document.getElementById('finding-1');
+let ctaAutoDone = false;
 const ctaX = document.getElementById('cta-x'), ctaScrim = document.getElementById('cta-scrim'), ctaBub = document.getElementById('cta-bub');
 const showCta = on => {
   cta.classList.toggle('show', on); ctaScrim.classList.toggle('show', on);
@@ -595,11 +598,13 @@ const closeCta = () => {
 };
 ctaX.addEventListener('click', closeCta);
 ctaScrim.addEventListener('click', closeCta);
-ctaBub.addEventListener('click', () => { showCta(true); setTimeout(() => ctaX.focus(), 30); });
+ctaBub.addEventListener('click', () => { ctaAutoDone = true; showCta(true); setTimeout(() => ctaX.focus(), 30); });
 document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && cta.classList.contains('show')) closeCta(); });
 const onScroll = () => {
   wm.classList.toggle('show', window.scrollY > 40);
   ctaBub.classList.toggle('up', window.scrollY > 40);
+  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+  if (!ctaAutoDone && (window.scrollY > scrollable * 0.1 || trigger.getBoundingClientRect().top < window.innerHeight * 0.6)) { ctaAutoDone = true; showCta(true); }
 };
 showCta(false);
 window.addEventListener('scroll', onScroll, {passive: true}); onScroll();
