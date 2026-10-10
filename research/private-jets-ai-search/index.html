@@ -226,7 +226,25 @@ section{display:flex;flex-direction:column;gap:16px}
   .cta-plain{display:none}
   .cta-x{top:6px;right:6px;width:40px;height:40px;display:flex;align-items:center;justify-content:center}
 }
-@media (max-width:640px){.wm{width:44px;right:12px;bottom:12px}.meaning,.explain{padding:14px 16px;gap:12px}.ic{width:32px;height:32px}}
+/* join-the-study bubble: sits above the corner logo once the card is closed; reopens it */
+.cta-scrim{display:none}
+.cta-bub{position:fixed;right:30px;bottom:88px;z-index:30;width:48px;height:48px;border-radius:50%;border:none;padding:0;background:var(--brand);color:#f7f4f0;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 20px rgba(21,17,15,.25);
+  opacity:0;transform:scale(.3);pointer-events:none;visibility:hidden;transition:opacity .2s,transform .25s ease,visibility 0s .25s}
+.cta-bub.show{opacity:1;transform:none;pointer-events:auto;visibility:visible;transition:opacity .25s .22s,transform .4s cubic-bezier(.2,1.4,.4,1) .22s,visibility 0s}
+.cta-bub svg{width:22px;height:22px}
+.cta-bub:hover{background:#14271f}
+.cta-bub:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+@media (max-width:899px){
+  .cta-scrim{display:block;position:fixed;inset:0;z-index:43;background:rgba(21,17,15,.32);opacity:0;pointer-events:none;transition:opacity .3s}
+  .cta-scrim.show{opacity:1;pointer-events:auto}
+  .cta{z-index:44}
+  .cta:not(.show){transform-origin:bottom right;transform:translateY(12px) scale(.15)}
+}
+@media (max-width:640px){.cta-bub{right:17px;bottom:66px;width:44px;height:44px}}
+@media (prefers-reduced-motion:reduce){.cta-bub,.cta-bub.show,.cta-scrim{transition:none}}
+@media print{.cta-bub,.cta-scrim{display:none}}
+@media (max-width:640px){.wm{width:44px;right:17px;bottom:12px}.meaning,.explain{padding:14px 16px;gap:12px}.ic{width:32px;height:32px}}
 .m-label{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);font-weight:600}
 .meaning p{font-size:.97rem}
 .m-small{color:var(--ink-2);font-size:.92rem!important}
@@ -503,6 +521,8 @@ section{scroll-margin-top:24px}
   </div>
   <p class="cta-plain"><a href="mailto:oliver@mvco.agency?subject=AI%20search%20study%3A%20private%20aviation">oliver@mvco.agency</a><br><a href="tel:+442035765779">+44 20 3576 5779</a></p>
 </aside>
+<div class="cta-scrim" id="cta-scrim"></div>
+<button class="cta-bub" id="cta-bub" type="button" aria-controls="cta" aria-label="Want your firm in the next round?" title="Want your firm in the next round?"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.5a8.5 8.5 0 0 1-12.4 7.6L3.5 20.5l1.4-4.4A8.5 8.5 0 1 1 20.5 11.5z"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01"/></svg></button>
 <div class="rprog" aria-hidden="true"><i id="rprog-i"></i></div>
 <div class="rbar" id="rbar">
   <button class="rbar-btn" id="toc-open" type="button" aria-controls="toc-drawer" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>Contents</button>
@@ -559,19 +579,31 @@ more.addEventListener('click', () => {
 render();
 
 const wm = document.getElementById('wm');
-// "Join the study" card: shows once the reader reaches Finding 1; closing it keeps it closed for the visit.
+// "Join the study" card: shows once the reader reaches Finding 1 (dimming the page on mobile). Closing it
+// collapses it into a bubble above the corner logo, which reopens it; it stays a bubble for the rest of the visit.
 const cta = document.getElementById('cta'), trigger = document.getElementById('finding-1');
+const ctaX = document.getElementById('cta-x'), ctaScrim = document.getElementById('cta-scrim'), ctaBub = document.getElementById('cta-bub');
 let ctaClosed = false;
 try { ctaClosed = sessionStorage.getItem('ctaClosed') === '1'; } catch (err) {}
-document.getElementById('cta-x').addEventListener('click', () => {
-  cta.classList.remove('show'); ctaClosed = true;
+const showCta = on => {
+  cta.classList.toggle('show', on); ctaScrim.classList.toggle('show', on);
+  ctaBub.classList.toggle('show', !on && ctaClosed); ctaBub.setAttribute('aria-expanded', on);
+};
+const closeCta = () => {
+  const hadFocus = cta.contains(document.activeElement);
+  ctaClosed = true; showCta(false);
+  if (hadFocus) setTimeout(() => ctaBub.focus({preventScroll: true}), 30);
   try { sessionStorage.setItem('ctaClosed', '1'); } catch (err) {}
-});
-document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && cta.classList.contains('show')) document.getElementById('cta-x').click(); });
+};
+ctaX.addEventListener('click', closeCta);
+ctaScrim.addEventListener('click', closeCta);
+ctaBub.addEventListener('click', () => { showCta(true); setTimeout(() => ctaX.focus(), 30); });
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && cta.classList.contains('show')) closeCta(); });
 const onScroll = () => {
   wm.classList.toggle('show', window.scrollY > 40);
-  if (!ctaClosed && trigger.getBoundingClientRect().top < window.innerHeight * 0.6) cta.classList.add('show');
+  if (!ctaClosed && !cta.classList.contains('show') && trigger.getBoundingClientRect().top < window.innerHeight * 0.6) showCta(true);
 };
+showCta(false);
 window.addEventListener('scroll', onScroll, {passive: true}); onScroll();
 
 // Row and column highlight on hover. The header is mapped to columns first, so cells
